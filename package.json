@@ -5,8 +5,8 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start:dev": "nodemon --env-file-if-exists=ahani.dev.env server.js",
-    "start:prod": "nodemon server.js"
+    "start:dev": "nodemon --env-file-if-exists=ahani.dev.env server.mjs",
+    "start:prod": "nodemon server.mjs"
   },
   "keywords": [
     "ahani",

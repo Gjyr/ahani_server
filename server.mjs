@@ -1,8 +1,8 @@
 import https from "node:https";
 import http from "node:http";
-import app from "./app.js";
+import app from "./app.mjs";
 import { appendFile } from "node:fs";
-import { PORT, SSL, LOG_FILE_PATH, LOCAL_ADDRESS } from "./config.js";
+import { PORT, SSL, LOG_FILE_PATH, LOCAL_ADDRESS } from "./config.mjs";
 
 // process.loadEnvFile("./ahani.env");
 

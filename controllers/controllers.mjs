@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { MIME_TYPES, PUBLIC_PATH } from "../config.js";
+import { MIME_TYPES, PUBLIC_PATH } from "../config.mjs";
 
 function isChrome(headers) {
   const agentString = headers["sec-ch-ua"] || null;

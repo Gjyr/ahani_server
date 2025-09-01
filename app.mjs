@@ -3,8 +3,8 @@ import {
   serveSiteFiles,
   serveImages,
   logEvent,
-} from "./controllers/controllers.js";
-import { LOCAL_ADDRESS } from "./config.js";
+} from "./controllers/controllers.mjs";
+import { LOCAL_ADDRESS } from "./config.mjs";
 
 export default async function app(req, res) {
   const url = new URL(req.url, `http://${LOCAL_ADDRESS}/`);
