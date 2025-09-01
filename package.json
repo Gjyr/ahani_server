@@ -8,6 +8,12 @@
     "start:dev": "nodemon --env-file-if-exists=ahani.dev.env server.mjs",
     "start:prod": "nodemon server.mjs"
   },
+  "imports": {
+    "#app": "./app.mjs",
+    "#config": "./config.mjs",
+    "#controllers": "./controllers/controllers.mjs",
+    "#logger": "./controllers/logger.mjs"
+  },
   "keywords": [
     "ahani",
     "server"

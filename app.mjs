@@ -1,10 +1,6 @@
 import { URL } from "node:url";
-import {
-  serveSiteFiles,
-  serveImages,
-  logEvent,
-} from "./controllers/controllers.mjs";
-import { LOCAL_ADDRESS } from "./config.mjs";
+import { serveSiteFiles, serveImages, logEvent } from "#controllers";
+import { LOCAL_ADDRESS } from "#config";
 
 export default async function app(req, res) {
   const url = new URL(req.url, `http://${LOCAL_ADDRESS}/`);

@@ -12,6 +12,7 @@ const PUBLIC_PATH = join(
   ...SERVER_PATH.split(sep).slice(0, -1),
   "/ahani"
 );
+const ENCODING = "utf8";
 
 const MIME_TYPES = {
   default: "application/octet-stream",
@@ -29,6 +30,38 @@ const MIME_TYPES = {
   json: "application/json",
 };
 
+const LOG_LEVELS = {
+  alert: "alert",
+  error: "error",
+  warning: "warning",
+  info: "info",
+};
+
+const LEVEL_NUMBERS = {
+  [LOG_LEVELS.alert]: 0,
+  [LOG_LEVELS.error]: 1,
+  [LOG_LEVELS.warning]: 2,
+  [LOG_LEVELS.info]: 3,
+};
+
+const LOGGER_DEFAULT_CONFIG = {
+  to: "toFile",
+  format: JSON.stringify,
+  level: "info",
+};
+
+const LOG_FORMAT = {
+  date: () => new Date().toString(),
+  geography: (loader) => loader.remoteAddress,
+  message: ({ message }) => message,
+  name: ({ name }) => name,
+  level: (levelNumber) =>
+    LOG_LEVELS[Object.keys(LOG_LEVELS).at(levelNumber)]?.toUpperCase() ||
+    "uncertain",
+  newLine: () => "\n",
+  delimiter: () => "|",
+};
+
 const SSL =
   process.env.NODE_ENV === "development"
     ? null
@@ -37,4 +70,15 @@ const SSL =
         cert: readFileSync(join(SERVER_PATH, process.env.SSL_CERT)),
       };
 
-export { PORT, LOCAL_ADDRESS, MIME_TYPES, SSL, LOG_FILE_PATH, PUBLIC_PATH };
+export {
+  PORT,
+  LOCAL_ADDRESS,
+  MIME_TYPES,
+  ENCODING,
+  LOG_FORMAT,
+  SSL,
+  LOG_FILE_PATH,
+  PUBLIC_PATH,
+  LEVEL_NUMBERS,
+  LOGGER_DEFAULT_CONFIG,
+};

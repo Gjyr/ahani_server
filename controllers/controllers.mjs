@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { MIME_TYPES, PUBLIC_PATH } from "../config.mjs";
+import { MIME_TYPES, PUBLIC_PATH } from "#config";
+import { log, getLevelNumber, formatMessage } from "#logger";
 
 function isChrome(headers) {
   const agentString = headers["sec-ch-ua"] || null;
@@ -89,12 +90,15 @@ async function logEvent(req, res) {
     const bodyChunks = [];
 
     req.on("data", (chunk) => bodyChunks.push(chunk));
-    req.on("end", () => {
+    await req.on("end", async () => {
       const body = Buffer.concat(bodyChunks);
 
       if (req.headers["content-type"] === MIME_TYPES.json) {
         try {
           const data = JSON.parse(body);
+
+          if (getLevelNumber(data.type) < 9)
+            await log(data, req.connection, formatMessage);
 
           res.statusCode = 200;
           res.setHeader("Content-Type", MIME_TYPES.json);
@@ -108,6 +112,8 @@ async function logEvent(req, res) {
         }
       } else {
         // Raw body handling
+        await log({ content: { message: data } }, req.connection);
+
         res.statusCode = 200;
         res.setHeader("Content-Type", MIME_TYPES.plain);
         res.end(`Received raw body: ${body}`);
@@ -120,5 +126,7 @@ async function logEvent(req, res) {
     res.end("Expected a POST request at this endpoint with body set");
   }
 }
+
+async function getEvents() {}
 
 export { serveSiteFiles, serveImages, logEvent };
