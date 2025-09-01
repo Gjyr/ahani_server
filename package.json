@@ -1,0 +1,17 @@
+{
+  "name": "ahani-server",
+  "version": "1.0.0",
+  "description": "Node server for Ahani",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start:dev": "nodemon --env-file-if-exists=ahani.dev.env server.js",
+    "start:prod": "nodemon server.js"
+  },
+  "keywords": [
+    "ahani",
+    "server"
+  ],
+  "author": "Rye",
+  "license": "ISC"
+}
