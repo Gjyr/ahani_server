@@ -18,7 +18,7 @@ function formatMessage(data, client, config = LOG_FORMAT) {
     client
   )} on ${config.date()}${config.newLine()}Event: ${config.name(
     data.content
-  )} -- ${config.message(data.content)}${config.newLine()}`;
+  )} -- ${config.message(data.content)}${config.delimiter()}`;
 }
 
 const transports = {

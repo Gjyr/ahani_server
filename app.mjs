@@ -7,6 +7,7 @@ export default async function app(req, res) {
 
   if (url.pathname.startsWith("/hold/v1/i"))
     await serveImages(url.searchParams.get("img"), res);
-  if (url.pathname.startsWith("/log/v1")) await logEvent(req, res);
+  if (url.pathname.startsWith("/log/v1") && req.method === "POST")
+    await logEvent(req, res);
   else await serveSiteFiles(req, res);
 }

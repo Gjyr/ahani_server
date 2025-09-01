@@ -86,47 +86,45 @@ async function serveImages(imagePath, res) {
 }
 
 async function logEvent(req, res) {
-  if (req.method === "POST") {
-    const bodyChunks = [];
+  const bodyChunks = [];
 
-    req.on("data", (chunk) => bodyChunks.push(chunk));
-    await req.on("end", async () => {
-      const body = Buffer.concat(bodyChunks);
+  req.on("data", (chunk) => bodyChunks.push(chunk));
+  await req.on("end", async () => {
+    const body = Buffer.concat(bodyChunks);
 
-      if (req.headers["content-type"] === MIME_TYPES.json) {
-        try {
-          const data = JSON.parse(body);
+    if (req.headers["content-type"] === MIME_TYPES.json) {
+      try {
+        const data = JSON.parse(body);
 
-          if (getLevelNumber(data.type) < 9)
-            await log(data, req.connection, formatMessage);
-
-          res.statusCode = 200;
-          res.setHeader("Content-Type", MIME_TYPES.json);
-          res.end(JSON.stringify({ message: "Event captured!", data }));
-        } catch (serverError) {
-          res.statusCode = 400;
-          res.setHeader("Content-Type", MIME_TYPES.plain);
-          return res.end(
-            `Something went wrong while trying to log event: ${serverError.name}: ${serverError.message},\n ${serverError.stack}`
-          );
-        }
-      } else {
-        // Raw body handling
-        await log({ content: { message: data } }, req.connection);
+        if (getLevelNumber(data.type) < 9)
+          await log(data, req.connection, formatMessage);
 
         res.statusCode = 200;
+        res.setHeader("Content-Type", MIME_TYPES.json);
+        res.end(JSON.stringify({ message: "Event captured!", data }));
+      } catch (serverError) {
+        res.statusCode = 400;
         res.setHeader("Content-Type", MIME_TYPES.plain);
-        res.end(`Received raw body: ${body}`);
+        return res.end(
+          `Something went wrong while trying to log event: ${serverError.name}: ${serverError.message},\n ${serverError.stack}`
+        );
       }
-    });
-  } else {
-    // not POST handling
-    res.statusCode = 200;
-    res.setHeader("Content-Type", MIME_TYPES.plain);
-    res.end("Expected a POST request at this endpoint with body set");
-  }
+    } else {
+      // Raw body handling
+      await log({ content: { message: data } }, req.connection);
+
+      res.statusCode = 200;
+      res.setHeader("Content-Type", MIME_TYPES.plain);
+      res.end(`Received raw body: ${body}`);
+    }
+  });
 }
 
-async function getEvents() {}
+async function getEvents() {
+  // must be able to specify date
+  // res.statusCode = 200;
+  // res.setHeader("Content-Type", MIME_TYPES.plain);
+  // res.end("Expected a POST request at this endpoint with body set");
+}
 
 export { serveSiteFiles, serveImages, logEvent };
