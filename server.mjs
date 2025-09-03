@@ -3,8 +3,6 @@ import http from "node:http";
 import app from "#app";
 import { PORT, SSL, LOCAL_ADDRESS } from "#config";
 
-// process.loadEnvFile("./ahani.env");
-
 const server =
   process.env.NODE_ENV === "development"
     ? http.createServer(app)

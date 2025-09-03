@@ -33,7 +33,6 @@ async function log(
   data,
   client,
   format = LOGGER_DEFAULT_CONFIG.format,
-  level = LOGGER_DEFAULT_CONFIG.level,
   to = LOGGER_DEFAULT_CONFIG.to
 ) {
   await transports[to]()(
