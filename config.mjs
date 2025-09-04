@@ -52,6 +52,7 @@ const LOGGER_DEFAULT_CONFIG = {
 
 const LOG_FORMAT = {
   date: () => new Date().toString(),
+  temporal: () => `${new Date().getMonth()}-${new Date().getFullYear()}`,
   geography: (loader) => loader.remoteAddress,
   message: ({ message }) => message,
   name: ({ name }) => name,

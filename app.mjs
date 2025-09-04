@@ -1,5 +1,5 @@
 import { URL } from "node:url";
-import { serveSiteFiles, serveImages, logEvent } from "#controllers";
+import { serveSiteFiles, serveImages, loggerRout } from "#controllers";
 import { LOCAL_ADDRESS } from "#config";
 
 export default async function app(req, res) {
@@ -7,7 +7,6 @@ export default async function app(req, res) {
 
   if (url.pathname.startsWith("/hold/v1/i"))
     await serveImages(url.searchParams.get("img"), res);
-  if (url.pathname.startsWith("/log/v1") && req.method === "POST")
-    await logEvent(req, res);
+  if (url.pathname.startsWith("/log/v1")) await loggerRout(req, res, url);
   else await serveSiteFiles(req, res);
 }

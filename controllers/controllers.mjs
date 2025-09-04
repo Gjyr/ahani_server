@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { MIME_TYPES, PUBLIC_PATH } from "#config";
-import { log, getLevelNumber, formatMessage } from "#logger";
+import { logEvent, getEvents } from "#logger";
 
 function isChrome(headers) {
   const agentString = headers["sec-ch-ua"] || null;
@@ -59,6 +59,7 @@ async function prepareFile(url, isUnsupported) {
   return { found, ext, stream };
 }
 
+// TODO: default route
 async function serveSiteFiles(req, res) {
   let isUnsupported = true;
 
@@ -73,6 +74,7 @@ async function serveSiteFiles(req, res) {
   file.stream.pipe(res);
 }
 
+// TODO: hold route
 async function serveImages(imagePath, res) {
   fs.readFile(
     `${PUBLIC_PATH}/assets/images/trp/${imagePath}main.webp`,
@@ -85,46 +87,15 @@ async function serveImages(imagePath, res) {
   );
 }
 
-async function logEvent(req, res) {
-  const bodyChunks = [];
-
-  req.on("data", (chunk) => bodyChunks.push(chunk));
-  await req.on("end", async () => {
-    const body = Buffer.concat(bodyChunks);
-
-    if (req.headers["content-type"] === MIME_TYPES.json) {
-      try {
-        const data = JSON.parse(body);
-
-        if (getLevelNumber(data.type) < 9)
-          await log(data, req.connection, formatMessage);
-
-        res.statusCode = 200;
-        res.setHeader("Content-Type", MIME_TYPES.json);
-        res.end(JSON.stringify({ message: "Event captured!", data }));
-      } catch (serverError) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", MIME_TYPES.plain);
-        return res.end(
-          `Something went wrong while trying to log event: ${serverError.name}: ${serverError.message},\n ${serverError.stack}`
-        );
-      }
-    } else {
-      // Raw body handling
-      await log({ content: { message: data } }, req.connection);
-
-      res.statusCode = 200;
-      res.setHeader("Content-Type", MIME_TYPES.plain);
-      res.end(`Received raw body: ${body}`);
-    }
-  });
+// TODO: move to routs
+async function loggerRout(req, res, url) {
+  if (req.method === "POST") await logEvent(req, res);
+  else if (req.method === "GET") await getEvents(req, res, url);
+  else {
+    res.statusCode = 400;
+    res.setHeader("Content-Type", MIME_TYPES.plain);
+    res.end(`Unsupported request`);
+  }
 }
 
-async function getEvents() {
-  // must be able to specify date
-  // res.statusCode = 200;
-  // res.setHeader("Content-Type", MIME_TYPES.plain);
-  // res.end("Expected a POST request at this endpoint with body set");
-}
-
-export { serveSiteFiles, serveImages, logEvent };
+export { serveSiteFiles, serveImages, loggerRout };
