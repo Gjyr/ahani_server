@@ -77,7 +77,7 @@ async function serveSiteFiles(req, res) {
 // TODO: hold route
 async function serveImages(imagePath, res) {
   fs.readFile(
-    `${PUBLIC_PATH}/assets/images/trp/${imagePath}main.webp`,
+    `${PUBLIC_PATH}\\assets\\images\\trp\\${imagePath}main.webp`,
     (err, content) => {
       res.writeHead(200, {
         "Content-Type": "image/webp",
