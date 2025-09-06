@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start:dev": "nodemon --env-file-if-exists=ahani.dev.env server.mjs",
-    "start:prod": "nodemon server.mjs"
+    "start:prod": "node --env-file-if-exists=ahani.prod.env server.mjs",
+    "start:debug": "node --inspect server.mjs"
   },
   "imports": {
     "#app": "./app.mjs",
