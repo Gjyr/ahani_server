@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { MIME_TYPES, PUBLIC_PATH } from "#config";
 import { logEvent, getEvents } from "#logger";
+import { generateNonce } from "#utilities";
 
 function isChrome(headers) {
   const agentString = headers["sec-ch-ua"] || null;
@@ -41,6 +42,7 @@ function setHeaders(res, mimeType, found) {
   }
 }
 
+// TODO: add nonce field for importmap & uncomment CSP in index.html
 async function prepareFile(url, isUnsupported) {
   const paths = [PUBLIC_PATH, url];
 

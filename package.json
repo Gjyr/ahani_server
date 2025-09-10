@@ -13,7 +13,8 @@
     "#app": "./app.mjs",
     "#config": "./config.mjs",
     "#controllers": "./controllers/controllers.mjs",
-    "#logger": "./controllers/logger.mjs"
+    "#logger": "./controllers/logger.mjs",
+    "#utilities": "./utils.mjs"
   },
   "keywords": [
     "ahani",
