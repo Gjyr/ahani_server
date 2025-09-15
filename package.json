@@ -10,10 +10,10 @@
     "start:debug": "node --inspect server.mjs"
   },
   "imports": {
-    "#app": "./app.mjs",
-    "#config": "./config.mjs",
-    "#controllers": "./controllers/controllers.mjs",
-    "#logger": "./controllers/logger.mjs",
+    "#app": "./app/main.mjs",
+    "#config": "./app/config/config.mjs",
+    "#controllers": "./app/api/controllers.mjs",
+    "#logger": "./libraries/logging/logger.mjs",
     "#utilities": "./utils.mjs"
   },
   "keywords": [
