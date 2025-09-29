@@ -7,6 +7,7 @@ import { randomUUID } from "node:crypto";
 import { MIME_TYPES, SERVER_PATH } from "../../app/config/config.mjs";
 
 import { params, validateConfig } from "./config/deepseek.mjs";
+import { generateMessageId } from "./utils/idGenerator.mjs";
 
 // const `${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}` = "./logs/chats/messages.json";
 
@@ -513,6 +514,6 @@ async function handleRegularResponse(req, res, message, parameters) {
   }
 }
 
-const generateMessageId = () => randomUUID();
+// const generateMessageId = () => randomUUID();
 
 export { processMessagePost };
