@@ -1,25 +1,21 @@
 {
-  "name": "ahani-server",
+  "name": "ahani-chat-app",
   "version": "1.0.0",
-  "description": "Node server for Ahani",
+  "description": "Internal ",
   "type": "module",
-  "main": "server.mjs",
+  "main": "index.mjs",
   "scripts": {
     "start:dev": "nodemon --env-file-if-exists=ahani.dev.env server.mjs",
     "start:prod": "node --env-file-if-exists=ahani.prod.env server.mjs",
     "start:debug": "node --inspect server.mjs"
   },
   "imports": {
-    "#app": "./app/main.mjs",
-    "#config": "./app/config/config.mjs",
-    "#controllers": "./app/api/controllers.mjs",
-    "#logger": "./libraries/logging/logger.mjs",
-    "#utilities": "./utils.mjs",
-    "#robot": "./libraries/ai/robot.mjs"
+    "#config": "./config/deepseek.mjs"
   },
   "keywords": [
     "ahani",
-    "server"
+    "server",
+    "chat"
   ],
   "author": "Rye",
   "license": "ISC"

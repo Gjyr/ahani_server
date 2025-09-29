@@ -1,0 +1,33 @@
+// import { SERVER_PATH } from "#config";
+
+export const CHAT_CONFIG = {
+  CHAT_HISTORY_DIRS: "/logs/chats/",
+  DEFAULT_CHAT: "messages.json",
+
+  NET_CONFIG: {
+    hostname: "api.deepseek.com",
+    path: "/v1/chat/completions",
+    port: 443,
+    method: "POST",
+    headers: {
+      "Content-Type": MIME_TYPES.json,
+      Accept: MIME_TYPES.json,
+      "User-Agent": "Ahani/1.0",
+      Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+    },
+    timeout: 30000,
+  },
+
+  DS_ROLE: "user",
+  DS_PARAMETERS: {
+    model: "deepseek-chat",
+    temperature: 1.5,
+    max_tokens: 8192,
+    stream: true,
+  },
+};
+
+export function validateConfig() {
+  if (!process.env.DEEPSEEK_API_KEY)
+    throw new Error("Sending messages with the API Token set.");
+}

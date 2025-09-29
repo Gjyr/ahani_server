@@ -13,6 +13,7 @@ const PUBLIC_PATH = join(
   "/ahani"
 );
 const ENCODING = "utf8";
+const API_ROUTE = "/api/v1";
 
 const MIME_TYPES = {
   default: "application/octet-stream",
@@ -76,6 +77,7 @@ export {
   LOCAL_ADDRESS,
   MIME_TYPES,
   ENCODING,
+  API_ROUTE,
   LOG_FORMAT,
   SSL,
   LOG_FILE_PATH,

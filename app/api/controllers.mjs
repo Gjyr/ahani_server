@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { MIME_TYPES, PUBLIC_PATH } from "#config";
 import { logEvent, getEvents } from "#logger";
+import { processMessagePost } from "#robot";
 import { generateNonce } from "#utilities";
 
 function isChrome(headers) {
@@ -48,6 +49,10 @@ async function prepareFile(url, isUnsupported) {
 
   if (url.endsWith("/") && isUnsupported) paths.push("/public/browser.html");
   else if (url.endsWith("/")) paths.push("index.html");
+  else if (url.endsWith("/robot")) {
+    paths.pop();
+    paths.push("/public/robot.html");
+  }
 
   const filePath = path.join(...paths);
 
@@ -65,6 +70,7 @@ async function prepareFile(url, isUnsupported) {
 async function serveSiteFiles(req, res) {
   let isUnsupported = true;
 
+  // TODO: implement routs
   if (req.url === "/")
     isUnsupported = !isChrome(req.headers) || !isDesktop(req.headers);
 
@@ -100,4 +106,15 @@ async function loggerRout(req, res, url) {
   }
 }
 
-export { serveSiteFiles, serveImages, loggerRout };
+// TODO: move to routs
+async function aiRout(req, res) {
+  if (req.method === "GET") await serveSiteFiles(req, res);
+  else if (req.method === "POST") await processMessagePost(req, res);
+  else {
+    res.statusCode = 400;
+    res.setHeader("Content-Type", MIME_TYPES.plain);
+    res.end(`I need to implement some exception handling`);
+  }
+}
+
+export { serveSiteFiles, serveImages, loggerRout, aiRout };
