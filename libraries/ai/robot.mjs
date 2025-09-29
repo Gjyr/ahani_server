@@ -4,25 +4,23 @@ import { Transform, Readable, pipeline } from "node:stream";
 import { request } from "node:https";
 import { promisify } from "node:util";
 import { randomUUID } from "node:crypto";
-import { MIME_TYPES } from "../../app/config/config.mjs";
+import { MIME_TYPES, SERVER_PATH } from "../../app/config/config.mjs";
 
-// import {} from "";
+import { params, validateConfig } from "./config/deepseek.mjs";
 
-// import chatHistory from '../../logs/messages.json' with { type: 'json' };
+// const `${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}` = "./logs/chats/messages.json";
 
-const CHAT_HISTORY = "./logs/chats/messages.json";
-
-const NET_CONFIG = Object.freeze({
-  hostname: "api.deepseek.com",
-  path: "/v1/chat/completions",
-  port: 443,
-  method: "POST",
-  headers: {
-    "Content-Type": MIME_TYPES.json,
-    //   Accept: MIME_TYPES.json,
-    Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-  },
-});
+// const NET_CONFIG = Object.freeze({
+//   hostname: "api.deepseek.com",
+//   path: "/v1/chat/completions",
+//   port: 443,
+//   method: "POST",
+//   headers: {
+//     "Content-Type": MIME_TYPES.json,
+//     //   Accept: MIME_TYPES.json,
+//     Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+//   },
+// });
 
 /*
 const DS_REFERENCE_PARAMS = Object.freeze({
@@ -70,7 +68,7 @@ class DeepSeekStream extends Transform {
       };
 
       /**
-       * @description Streamed response, DS param was set in {@link DS_DEFAULTS}
+       * @description Streamed response, DS param was set in {@link params.DS_PARAMETERS}
        * @instance IncomingMessage
        */
       const response = await this.makeAPIRequest(requestBody);
@@ -84,7 +82,7 @@ class DeepSeekStream extends Transform {
 
   makeAPIRequest(requestBody) {
     return new Promise((resolve, reject) => {
-      const options = NET_CONFIG;
+      const options = params.NET_CONFIG;
 
       const req = request(options, (res) => resolve(res));
 
@@ -179,24 +177,28 @@ async function processDeepSeekResponse(
 
   try {
     // add validation
-    const chatHistory = await readChatHistory(CHAT_HISTORY);
+    const chatHistory = await readChatHistory(
+      `${SERVER_PATH}${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}`
+    );
 
     // push with validation
     chatHistory.messages.push({
-      role: "user",
+      role: params.DS_ROLE,
       content: userMessage,
       timestamp: new Date().toISOString(),
       parameters: parameters, // temperature, etc. TODO: schema
     });
 
     const deepSeekStream = new DeepSeekStream({
-      model: parameters.model || DS_DEFAULTS.model,
-      temperature: parameters.temperature || DS_DEFAULTS.temperature,
-      max_tokens: parameters.max_tokens || DS_DEFAULTS.max_tokens,
+      model: parameters.model || params.DS_PARAMETERS.model,
+      temperature: parameters.temperature || params.DS_PARAMETERS.temperature,
+      max_tokens: parameters.max_tokens || params.DS_PARAMETERS.max_tokens,
     });
 
     const responseCollector = new ResponseCollector();
-    const historyUpdater = new HistoryUpdater(CHAT_HISTORY);
+    const historyUpdater = new HistoryUpdater(
+      `${SERVER_PATH}${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}`
+    );
 
     // if (res) this.setupStreamingResponse(res, responseCollector);
     if (res) setupStreamingResponse(res, responseCollector);
@@ -227,7 +229,9 @@ async function processDeepSeekResponse(
     // return chatHistory;
     return {
       success: true,
-      data: await readChatHistory(CHAT_HISTORY),
+      data: await readChatHistory(
+        `${SERVER_PATH}${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}`
+      ),
       streamed: !!res,
     };
   } catch (error) {
@@ -393,20 +397,20 @@ async function handleStreamingResponse(req, res, message, parameters) {
   });
 
   try {
-    const filename = CHAT_HISTORY;
+    const filename = `${SERVER_PATH}${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}`;
     // const chatHistory = await readChatHistoryWithValidation(filename);
     const chatHistory = await readChatHistory(filename);
 
     chatHistory.messages.push({
-      role: parameters.role || DS_DEFAULTS.role,
+      role: parameters.role || params.DS_ROLE,
       content: message,
       timestamp: new Date().toISOString(),
       parameters: parameters,
     });
 
     const deepSeekStream = new DeepSeekStream({
-      model: parameters.model || DS_DEFAULTS.model,
-      temperature: parameters.temperature || DS_DEFAULTS.temperature,
+      model: parameters.model || params.DS_PARAMETERS.model,
+      temperature: parameters.temperature || params.DS_PARAMETERS.temperature,
     });
 
     const responseCollector = new ResponseCollector();

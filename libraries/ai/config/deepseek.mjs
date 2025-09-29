@@ -1,10 +1,10 @@
-// import { SERVER_PATH } from "#config";
+import { MIME_TYPES } from "../../../app/config/config.mjs";
 
-export const CHAT_CONFIG = {
+export const params = Object.freeze({
   CHAT_HISTORY_DIRS: "/logs/chats/",
   DEFAULT_CHAT: "messages.json",
 
-  NET_CONFIG: {
+  NET_CONFIG: Object.freeze({
     hostname: "api.deepseek.com",
     path: "/v1/chat/completions",
     port: 443,
@@ -16,16 +16,16 @@ export const CHAT_CONFIG = {
       Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
     },
     timeout: 30000,
-  },
+  }),
 
   DS_ROLE: "user",
-  DS_PARAMETERS: {
+  DS_PARAMETERS: Object.seal({
     model: "deepseek-chat",
     temperature: 1.5,
     max_tokens: 8192,
     stream: true,
-  },
-};
+  }),
+});
 
 export function validateConfig() {
   if (!process.env.DEEPSEEK_API_KEY)
