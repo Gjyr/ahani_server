@@ -3,6 +3,7 @@ import {
   handleRegularResponse,
   handleStreamingResponse,
   params,
+  listChatHistories,
 } from "./index.mjs";
 import { MIME_TYPES } from "../../app/config/config.mjs";
 
@@ -46,6 +47,24 @@ async function processMessagePost(req, res) {
     );
     res.end();
   }
+}
+
+async function listChats(req, res) {
+  try {
+    const chats = await listChatHistories(params.CHAT_HISTORY_DIR);
+    // send success true & chats
+  } catch (error) {
+    // status 500, send success false and error.message
+  }
+}
+
+async function createChat(req, res) {
+  const body = parseRequestBody(req);
+  const { name } = JSON.parse(body);
+  const chatFile = `${name || `chat-${Date.now()}`}.json`;
+
+  // create new chat
+  // send success true & chatFile
 }
 
 // TODO: error handling
