@@ -9,6 +9,7 @@ import { MIME_TYPES, SERVER_PATH } from "../../app/config/config.mjs";
 import { params, validateConfig } from "./config/deepseek.mjs";
 import { generateMessageId } from "./utils/idGenerator.mjs";
 import { readChatHistory } from "./utils/chatHistory.mjs";
+import { DeepSeekStream } from "./streams/DeepSeekStream.mjs";
 
 // const `${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}` = "./logs/chats/messages.json";
 
@@ -53,47 +54,47 @@ const DS_REFERENCE_PARAMS = Object.freeze({
 
 const pipelineAsync = promisify(pipeline);
 
-class DeepSeekStream extends Transform {
-  constructor(options = {}) {
-    super({ ...options, objectMode: true });
-    this.temperature = options.temperature;
-    this.model = options.model;
-  }
+// class DeepSeekStream extends Transform {
+//   constructor(options = {}) {
+//     super({ ...options, objectMode: true });
+//     this.temperature = options.temperature;
+//     this.model = options.model;
+//   }
 
-  async _transform(chatHistory, encoding, callback) {
-    try {
-      const requestBody = {
-        model: this.model,
-        stream: true,
-        temperature: this.temperature,
-        messages: chatHistory.messages,
-      };
+//   async _transform(chatHistory, encoding, callback) {
+//     try {
+//       const requestBody = {
+//         model: this.model,
+//         stream: true,
+//         temperature: this.temperature,
+//         messages: chatHistory.messages,
+//       };
 
-      /**
-       * @description Streamed response, DS param was set in {@link params.DS_PARAMETERS}
-       * @instance IncomingMessage
-       */
-      const response = await this.makeAPIRequest(requestBody);
+//       /**
+//        * @description Streamed response, DS param was set in {@link params.DS_PARAMETERS}
+//        * @instance IncomingMessage
+//        */
+//       const response = await this.makeAPIRequest(requestBody);
 
-      this.push({ chatHistory, responseStream: response });
-      callback();
-    } catch (error) {
-      callback(error);
-    }
-  }
+//       this.push({ chatHistory, responseStream: response });
+//       callback();
+//     } catch (error) {
+//       callback(error);
+//     }
+//   }
 
-  makeAPIRequest(requestBody) {
-    return new Promise((resolve, reject) => {
-      const options = params.NET_CONFIG;
+//   makeAPIRequest(requestBody) {
+//     return new Promise((resolve, reject) => {
+//       const options = params.NET_CONFIG;
 
-      const req = request(options, (res) => resolve(res));
+//       const req = request(options, (res) => resolve(res));
 
-      req.on("error", reject);
-      req.write(JSON.stringify(requestBody));
-      req.end();
-    });
-  }
-}
+//       req.on("error", reject);
+//       req.write(JSON.stringify(requestBody));
+//       req.end();
+//     });
+//   }
+// }
 
 class ResponseCollector extends Transform {
   constructor(options = {}) {
@@ -414,10 +415,7 @@ async function handleStreamingResponse(req, res, message, parameters) {
       parameters: parameters,
     });
 
-    const deepSeekStream = new DeepSeekStream({
-      model: parameters.model || params.DS_PARAMETERS.model,
-      temperature: parameters.temperature || params.DS_PARAMETERS.temperature,
-    });
+    const deepSeekStream = new DeepSeekStream(process.env.DEEPSEEK_API_KEY);
 
     const responseCollector = new ResponseCollector();
     const historyUpdater = new HistoryUpdater(filename);
