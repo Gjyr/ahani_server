@@ -50,7 +50,7 @@ async function readChatHistory(chatHistoryDir, chatFile) {
 }
 
 async function writeChatHistory(chatHistoryDir, chatFile, data) {
-  const filename = join(chatHistoryDir, chatFile);
+  const filename = join(SERVER_PATH, chatHistoryDir, chatFile);
 
   try {
     data.updatedAt = new Date().toISOString();
@@ -81,4 +81,4 @@ async function listChatHistories(chatHistoryDir) {
   }
 }
 
-export { readChatHistory, writeChatHistory };
+export { readChatHistory, writeChatHistory, listChatHistories };
