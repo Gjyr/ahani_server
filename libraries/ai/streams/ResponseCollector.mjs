@@ -67,9 +67,6 @@ class ResponseCollector extends Transform {
             // TODO: chunks for RT processing, send them to the client
             this.emit("chunk", content);
           }
-
-          // TODO: should be logged still?
-          // to skip invalid JSON lines
         }
       }
     }
