@@ -10,6 +10,7 @@ import { params, validateConfig } from "./config/deepseek.mjs";
 import { generateMessageId } from "./utils/idGenerator.mjs";
 import { readChatHistory } from "./utils/chatHistory.mjs";
 import { DeepSeekStream } from "./streams/DeepSeekStream.mjs";
+import { ResponseCollector } from "./streams/ResponseCollector.mjs";
 
 // const `${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}` = "./logs/chats/messages.json";
 
@@ -96,54 +97,54 @@ const pipelineAsync = promisify(pipeline);
 //   }
 // }
 
-class ResponseCollector extends Transform {
-  constructor(options = {}) {
-    super({ ...options, objectMode: true });
-  }
+// class ResponseCollector extends Transform {
+//   constructor(options = {}) {
+//     super({ ...options, objectMode: true });
+//   }
 
-  async _transform(data, encoding, callback) {
-    const { chatHistory, responseStream } = data;
+//   async _transform(data, encoding, callback) {
+//     const { chatHistory, responseStream } = data;
 
-    try {
-      let fullResponse = "";
+//     try {
+//       let fullResponse = "";
 
-      for await (const chunk of responseStream) {
-        const lines = chunk
-          .toString()
-          .split("\n")
-          .filter((line) => line.trim() !== "");
+//       for await (const chunk of responseStream) {
+//         const lines = chunk
+//           .toString()
+//           .split("\n")
+//           .filter((line) => line.trim() !== "");
 
-        for (const line of lines) {
-          if (line.startsWith("data: ") && !line.includes("[DONE]")) {
-            try {
-              const jsonData = JSON.parse(line.slice(6));
-              const content = jsonData.choices[0]?.delta?.content || "";
-              fullResponse += content;
+//         for (const line of lines) {
+//           if (line.startsWith("data: ") && !line.includes("[DONE]")) {
+//             try {
+//               const jsonData = JSON.parse(line.slice(6));
+//               const content = jsonData.choices[0]?.delta?.content || "";
+//               fullResponse += content;
 
-              // TODO: chunks for RT processing, send them to the client
-              this.emit("chunk", content);
-            } catch (e) {
-              // TODO: should be logged still?
-              // to skip invalid JSON lines
-            }
-          }
-        }
-      }
+//               // TODO: chunks for RT processing, send them to the client
+//               this.emit("chunk", content);
+//             } catch (e) {
+//               // TODO: should be logged still?
+//               // to skip invalid JSON lines
+//             }
+//           }
+//         }
+//       }
 
-      chatHistory.messages.push({
-        role: "assistant",
-        content: fullResponse,
-        timestamp: new Date().toISOString(),
-      });
+//       chatHistory.messages.push({
+//         role: "assistant",
+//         content: fullResponse,
+//         timestamp: new Date().toISOString(),
+//       });
 
-      // forwarding just the json from here
-      this.push(chatHistory);
-      callback();
-    } catch (error) {
-      callback(error);
-    }
-  }
-}
+//       // forwarding just the json from here
+//       this.push(chatHistory);
+//       callback();
+//     } catch (error) {
+//       callback(error);
+//     }
+//   }
+// }
 
 class HistoryUpdater extends Transform {
   constructor(filename, options = {}) {

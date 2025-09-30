@@ -13,7 +13,7 @@ class DeepSeekStream extends Transform {
     super({ ...options, objectMode: true });
     this.apiKey = apiKey;
     this.maxRetries = options.maxRetries || 3;
-    this.retryDelay = options.retryDelay || 1000;
+    this.retryDelay = options.retryDelay || 1_000;
   }
 
   async _transform(chatHistory, encoding, callback) {
