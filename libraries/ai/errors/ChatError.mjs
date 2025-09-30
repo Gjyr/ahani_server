@@ -33,10 +33,45 @@ class ValidationError extends ChatError {
   }
 }
 
+class RequestBodyError extends ChatError {
+  constructor(message, context = {}, originalError = null) {
+    super(message, context, originalError);
+    this.name = "RequestBodyError";
+    this.httpStatus = 400;
+  }
+}
+
+class PayloadTooLargeError extends RequestBodyError {
+  constructor(maxSize, actualSize, originalError = null) {
+    super(
+      `Request body too large: ${actualSize} bytes exceeds maximum ${maxSize} bytes`,
+      { maxSize, actualSize },
+      originalError
+    );
+    this.httpStatus = 413;
+  }
+}
+
+class InvalidJSONError extends RequestBodyError {
+  constructor(body, position, originalError = null) {
+    super(
+      "Invalid JSON in request body",
+      {
+        bodyPreview: body.substring(0, 100),
+        position,
+      },
+      originalError
+    );
+  }
+}
+
 export {
   ChatError,
   ChatHistoryError,
   DeepSeekAPIError,
   StreamProcessingError,
   ValidationError,
+  RequestBodyError,
+  PayloadTooLargeError,
+  InvalidJSONError,
 };

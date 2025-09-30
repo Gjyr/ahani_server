@@ -1,51 +1,93 @@
 import {
-  processChatMessage,
   handleRegularResponse,
   handleStreamingResponse,
   params,
   listChatHistories,
 } from "./index.mjs";
 import { MIME_TYPES } from "../../app/config/config.mjs";
+import {
+  InvalidJSONError,
+  PayloadTooLargeError,
+  RequestBodyError,
+  ValidationError,
+} from "./errors/ChatError.mjs";
+import { parseRequestBody, sendErrorResponse } from "./utils/bodyParser.mjs";
 
 async function processMessagePost(req, res) {
-  const acceptsSSE = req.headers.accept === MIME_TYPES.stream;
-  const body = await parseRequestBody(req);
-  const { message, parameters, chatFile = "messages.json" } = JSON.parse(body);
+  let requestBody = null;
 
   try {
-    if (acceptsSSE) {
-      await handleStreamingResponse(
-        req,
-        res,
-        params.CHAT_HISTORY_DIR,
-        chatFile,
-        message,
-        parameters,
-        process.env.DEEPSEEK_API_KEY
+    const requestBody = await parseRequestBody(req, {
+      maxSize: 10 * 1024 * 1024,
+      timeout: 15_000,
+      requireJSON: true,
+    });
+
+    if (!requestBody.message || typeof requestBody.message !== "string")
+      throw new ValidationError(
+        "Message field is required and must be a string",
+        "message",
+        requestBody.message
       );
-    } else {
-      await handleRegularResponse(
-        req,
-        res,
-        params.CHAT_HISTORY_DIR,
-        chatFile,
-        message,
-        parameters,
-        process.env.DEEPSEEK_API_KEY
+
+    const acceptsSSE = req.headers.accept === MIME_TYPES.stream;
+
+    const { message, parameters, chatFile = "messages.json" } = requestBody;
+
+    try {
+      if (acceptsSSE) {
+        await handleStreamingResponse(
+          req,
+          res,
+          params.CHAT_HISTORY_DIR,
+          chatFile,
+          message,
+          parameters,
+          process.env.DEEPSEEK_API_KEY
+        );
+      } else {
+        await handleRegularResponse(
+          req,
+          res,
+          params.CHAT_HISTORY_DIR,
+          chatFile,
+          message,
+          parameters,
+          process.env.DEEPSEEK_API_KEY
+        );
+      }
+    } catch (error) {
+      console.error("Route handler error: ", error);
+      if (!res.headersSent) {
+        res.writeHead(500, {
+          "Content-Type": MIME_TYPES.stream,
+          "Cache-Control": "no-cache",
+        });
+      }
+      res.write(
+        `event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`
       );
+      res.end();
     }
   } catch (error) {
-    console.error("Route handler error: ", error);
-    if (!res.headersSent) {
-      res.writeHead(500, {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
+    if (error instanceof PayloadTooLargeError)
+      return sendErrorResponse(res, 413, {
+        error: "Payload too large",
+        maxSize: error.context.maxSize,
+        actualSize: error.context.actualSize,
       });
-    }
-    res.write(
-      `event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`
-    );
-    res.end();
+    else if (error instanceof InvalidJSONError)
+      return sendErrorResponse(res, 400, {
+        error: "Invalid JSON in request body",
+        position: error.context.position,
+      });
+    else if (error instanceof RequestBodyError)
+      return sendErrorResponse(res, error.httpStatus || 400, {
+        error: error.message,
+      });
+
+    // TODO: catch higher
+    throw error;
   }
 }
 
@@ -65,32 +107,6 @@ async function createChat(req, res) {
 
   // create new chat
   // send success true & chatFile
-}
-
-// TODO: error handling
-function parseRequestBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    let totalLength = 0;
-
-    req.on("data", (chunk) => {
-      chunks.push(chunk);
-      totalLength += chunk.length;
-
-      // size limit, 5mb
-      if (totalLength > 5e6) {
-        req.destroy();
-        reject(new Error("Request body too large"));
-      }
-    });
-
-    req.on("end", () => {
-      const body = Buffer.concat(chunks, totalLength).toString();
-      resolve(body);
-    });
-
-    req.on("error", reject);
-  });
 }
 
 export { processMessagePost };

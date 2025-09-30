@@ -1,12 +1,5 @@
 import { appendFile } from "node:fs/promises";
 import { SERVER_PATH } from "../../../app/config/config.mjs";
-import {
-  ChatError,
-  ChatHistoryError,
-  DeepSeekAPIError,
-  StreamProcessingError,
-  ValidationError,
-} from "./ChatError.mjs";
 
 class ChatErrorHandler {
   static async handlePipelineError(error, context = {}) {
