@@ -13,6 +13,7 @@ import { DeepSeekStream } from "./streams/DeepSeekStream.mjs";
 import { ResponseCollector } from "./streams/ResponseCollector.mjs";
 import { HistoryUpdater } from "./streams/HistoryUpdater.mjs";
 import { handleStreamingResponse } from "./handlers/streaming.mjs";
+import { handleRegularResponse } from "./handlers/regular.mjs";
 
 // const `${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}` = "./logs/chats/messages.json";
 
@@ -324,13 +325,6 @@ async function processMessagePost(req, res) {
     console.log(message, parameters);
 
     if (acceptsSSE) {
-      console.log(
-        "BEFORE CALL: ",
-        params.CHAT_HISTORY_DIR,
-        params.DEFAULT_CHAT,
-        message,
-        parameters
-      );
       return await handleStreamingResponse(
         req,
         res,
@@ -341,7 +335,14 @@ async function processMessagePost(req, res) {
       );
     } else {
       // if not getting it through streams
-      return await handleRegularResponse(req, res, message, parameters);
+      return await handleRegularResponse(
+        req,
+        res,
+        params.CHAT_HISTORY_DIR,
+        params.DEFAULT_CHAT,
+        message,
+        parameters
+      );
     }
   } catch (error) {
     if (acceptsSSE) {
@@ -521,21 +522,21 @@ function parseRequestBody(req) {
 //   }
 // }
 
-async function handleRegularResponse(req, res, message, parameters) {
-  console.log("Regular route");
+// async function handleRegularResponse(req, res, message, parameters) {
+//   console.log("Regular route");
 
-  const result = await processDeepSeekResponse(message, parameters);
+//   const result = await processDeepSeekResponse(message, parameters);
 
-  if (result.success) {
-    res.json({
-      success: true,
-      response: result.data.messages.slice(-1)[0].content,
-      history: result.data,
-    });
-  } else {
-    res.status(500).json(result);
-  }
-}
+//   if (result.success) {
+//     res.json({
+//       success: true,
+//       response: result.data.messages.slice(-1)[0].content,
+//       history: result.data,
+//     });
+//   } else {
+//     res.status(500).json(result);
+//   }
+// }
 
 // const generateMessageId = () => randomUUID();
 

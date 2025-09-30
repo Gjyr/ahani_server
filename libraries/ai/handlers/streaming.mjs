@@ -75,6 +75,7 @@ async function handleStreamingResponse(
         const canWrite = res.write(`data: ${JSON.stringify({ content })}\n\n`);
 
         //  if the write buffer is full
+        // unless pipeline handles it?
         if (!canWrite) {
           res.once("drain", () =>
             console.log("Write buffer drained, continuing...")
@@ -139,7 +140,6 @@ async function handleStreamingResponse(
     );
 
     if (!streamEnded && !res.writableEnded) {
-      console.log("HERE");
       res.write(`data: ${JSON.stringify({ status: "complete" })}\n\n`);
       handleStreamEnd();
     }
