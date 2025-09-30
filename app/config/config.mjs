@@ -29,6 +29,7 @@ const MIME_TYPES = {
   mp3: "audio/mpeg",
   ttf: "font/ttf",
   json: "application/json",
+  stream: "text/event-stream",
 };
 
 const LOG_LEVELS = {

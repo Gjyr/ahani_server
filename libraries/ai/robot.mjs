@@ -12,6 +12,7 @@ import { readChatHistory } from "./utils/chatHistory.mjs";
 import { DeepSeekStream } from "./streams/DeepSeekStream.mjs";
 import { ResponseCollector } from "./streams/ResponseCollector.mjs";
 import { HistoryUpdater } from "./streams/HistoryUpdater.mjs";
+import { handleStreamingResponse } from "./handlers/streaming.mjs";
 
 // const `${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}` = "./logs/chats/messages.json";
 
@@ -323,7 +324,21 @@ async function processMessagePost(req, res) {
     console.log(message, parameters);
 
     if (acceptsSSE) {
-      return await handleStreamingResponse(req, res, message, parameters);
+      console.log(
+        "BEFORE CALL: ",
+        params.CHAT_HISTORY_DIR,
+        params.DEFAULT_CHAT,
+        message,
+        parameters
+      );
+      return await handleStreamingResponse(
+        req,
+        res,
+        params.CHAT_HISTORY_DIR,
+        params.DEFAULT_CHAT,
+        message,
+        parameters
+      );
     } else {
       // if not getting it through streams
       return await handleRegularResponse(req, res, message, parameters);
@@ -373,138 +388,138 @@ function parseRequestBody(req) {
     req.on("error", reject);
   });
 }
-async function handleStreamingResponse(req, res, message, parameters) {
-  res.writeHead(200, {
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    Connection: "keep-alive",
-  });
+// async function handleStreamingResponse(req, res, message, parameters) {
+//   res.writeHead(200, {
+//     "Content-Type": "text/event-stream",
+//     "Cache-Control": "no-cache",
+//     Connection: "keep-alive",
+//   });
 
-  let streamEnded = false;
-  let finalChunkSent = false;
+//   let streamEnded = false;
+//   let finalChunkSent = false;
 
-  const handleStreamEnd = () => {
-    if (!streamEnded) {
-      streamEnded = true;
+//   const handleStreamEnd = () => {
+//     if (!streamEnded) {
+//       streamEnded = true;
 
-      if (!res.writableEnded) res.end();
-    }
-  };
+//       if (!res.writableEnded) res.end();
+//     }
+//   };
 
-  req.on("close", () => {
-    console.log("Client disconnected during streaming");
-    handleStreamEnd();
-  });
+//   req.on("close", () => {
+//     console.log("Client disconnected during streaming");
+//     handleStreamEnd();
+//   });
 
-  req.on("error", (error) => {
-    console.error("Client connection error:", error);
-    handleStreamEnd();
-  });
+//   req.on("error", (error) => {
+//     console.error("Client connection error:", error);
+//     handleStreamEnd();
+//   });
 
-  try {
-    const filename = `${SERVER_PATH}${params.CHAT_HISTORY_DIR}${params.DEFAULT_CHAT}`;
-    // const chatHistory = await readChatHistoryWithValidation(filename);
-    // const chatHistory = await readChatHistory(filename);
-    const chatHistory = await readChatHistory(
-      params.CHAT_HISTORY_DIR,
-      params.DEFAULT_CHAT
-    );
+//   try {
+//     const filename = `${SERVER_PATH}${params.CHAT_HISTORY_DIR}${params.DEFAULT_CHAT}`;
+//     // const chatHistory = await readChatHistoryWithValidation(filename);
+//     // const chatHistory = await readChatHistory(filename);
+//     const chatHistory = await readChatHistory(
+//       params.CHAT_HISTORY_DIR,
+//       params.DEFAULT_CHAT
+//     );
 
-    chatHistory.messages.push({
-      role: parameters.role || params.DS_ROLE,
-      content: message,
-      timestamp: new Date().toISOString(),
-      parameters: parameters,
-    });
+//     chatHistory.messages.push({
+//       role: parameters.role || params.DS_ROLE,
+//       content: message,
+//       timestamp: new Date().toISOString(),
+//       parameters: parameters,
+//     });
 
-    const deepSeekStream = new DeepSeekStream(process.env.DEEPSEEK_API_KEY);
+//     const deepSeekStream = new DeepSeekStream(process.env.DEEPSEEK_API_KEY);
 
-    const responseCollector = new ResponseCollector();
-    const historyUpdater = new HistoryUpdater(
-      params.CHAT_HISTORY_DIR,
-      params.DEFAULT_CHAT
-    );
+//     const responseCollector = new ResponseCollector();
+//     const historyUpdater = new HistoryUpdater(
+//       params.CHAT_HISTORY_DIR,
+//       params.DEFAULT_CHAT
+//     );
 
-    // TODO: backpressure awareness
-    responseCollector.on("chunk", (content) => {
-      if (streamEnded || res.writableEnded) return;
+//     // TODO: backpressure awareness
+//     responseCollector.on("chunk", (content) => {
+//       if (streamEnded || res.writableEnded) return;
 
-      try {
-        const chunkData = JSON.stringify({ content });
-        const canWrite = res.write(`data: ${chunkData}\n\n`);
+//       try {
+//         const chunkData = JSON.stringify({ content });
+//         const canWrite = res.write(`data: ${chunkData}\n\n`);
 
-        //  if the write buffer is full
-        if (!canWrite) {
-          res.once("drain", () =>
-            console.log("Write buffer drained, continuing...")
-          );
-        }
-      } catch (error) {
-        console.error("Error writing chunk:", error);
-        handleStreamEnd();
-      }
-    });
+//         //  if the write buffer is full
+//         if (!canWrite) {
+//           res.once("drain", () =>
+//             console.log("Write buffer drained, continuing...")
+//           );
+//         }
+//       } catch (error) {
+//         console.error("Error writing chunk:", error);
+//         handleStreamEnd();
+//       }
+//     });
 
-    responseCollector.once("end", async (updatedHistory) => {
-      if (streamEnded) return;
+//     responseCollector.once("end", async (updatedHistory) => {
+//       if (streamEnded) return;
 
-      try {
-        // final completion event
-        const completeData = JSON.stringify({
-          status: "complete",
-          messageId: generateMessageId(),
-        });
+//       try {
+//         // final completion event
+//         const completeData = JSON.stringify({
+//           status: "complete",
+//           messageId: generateMessageId(),
+//         });
 
-        // checks if can write immediately
-        const canWrite = res.write(`data: ${completeData}\n\n`);
+//         // checks if can write immediately
+//         const canWrite = res.write(`data: ${completeData}\n\n`);
 
-        if (canWrite) {
-          // if buffer was accepted
-          handleStreamEnd();
-        } else {
-          // or to wait for buffer to drain
-          res.once("drain", handleStreamEnd);
-        }
-      } catch (error) {
-        console.error("Error sending completion event:", error);
-        handleStreamEnd();
-      }
-    });
+//         if (canWrite) {
+//           // if buffer was accepted
+//           handleStreamEnd();
+//         } else {
+//           // or to wait for buffer to drain
+//           res.once("drain", handleStreamEnd);
+//         }
+//       } catch (error) {
+//         console.error("Error sending completion event:", error);
+//         handleStreamEnd();
+//       }
+//     });
 
-    responseCollector.on("error", (error) => {
-      console.error("Stream processing error:", error);
+//     responseCollector.on("error", (error) => {
+//       console.error("Stream processing error:", error);
 
-      if (!streamEnded && !res.writableEnded)
-        res.write(
-          `event: error\ndata: ${JSON.stringify({
-            error: "Stream processing failed",
-          })}\n\n`
-        );
+//       if (!streamEnded && !res.writableEnded)
+//         res.write(
+//           `event: error\ndata: ${JSON.stringify({
+//             error: "Stream processing failed",
+//           })}\n\n`
+//         );
 
-      handleStreamEnd();
-    });
+//       handleStreamEnd();
+//     });
 
-    const historyStream = Readable.from([chatHistory]);
+//     const historyStream = Readable.from([chatHistory]);
 
-    await pipelineAsync(
-      historyStream,
-      deepSeekStream,
-      responseCollector,
-      historyUpdater
-    );
-  } catch (error) {
-    console.error("Streaming setup failed:", error);
+//     await pipelineAsync(
+//       historyStream,
+//       deepSeekStream,
+//       responseCollector,
+//       historyUpdater
+//     );
+//   } catch (error) {
+//     console.error("Streaming setup failed:", error);
 
-    if (!streamEnded && !res.writableEnded) {
-      res.write(
-        `event: error\ndata: ${JSON.stringify({
-          error: "Stream setup failed",
-        })}\n\n`
-      );
-      handleStreamEnd();
-    }
-  }
-}
+//     if (!streamEnded && !res.writableEnded) {
+//       res.write(
+//         `event: error\ndata: ${JSON.stringify({
+//           error: "Stream setup failed",
+//         })}\n\n`
+//       );
+//       handleStreamEnd();
+//     }
+//   }
+// }
 
 async function handleRegularResponse(req, res, message, parameters) {
   console.log("Regular route");
