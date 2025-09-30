@@ -5,7 +5,7 @@ import {
   DeepSeekAPIError,
   StreamProcessingError,
   ValidationError,
-} from "../errors/AppError.mjs";
+} from "../errors/ChatError.mjs";
 import { params } from "#config";
 
 class DeepSeekStream extends Transform {

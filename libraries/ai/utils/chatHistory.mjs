@@ -6,7 +6,7 @@ import {
   readdir,
 } from "node:fs/promises";
 import { join } from "node:path";
-import { ChatHistoryError, ValidationError } from "../errors/AppError.mjs";
+import { ChatHistoryError, ValidationError } from "../errors/ChatError.mjs";
 import { generateChatId } from "./idGenerator.mjs";
 import { SERVER_PATH } from "../../../app/config/config.mjs";
 

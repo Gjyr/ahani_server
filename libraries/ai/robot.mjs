@@ -11,6 +11,7 @@ import { generateMessageId } from "./utils/idGenerator.mjs";
 import { readChatHistory } from "./utils/chatHistory.mjs";
 import { DeepSeekStream } from "./streams/DeepSeekStream.mjs";
 import { ResponseCollector } from "./streams/ResponseCollector.mjs";
+import { HistoryUpdater } from "./streams/HistoryUpdater.mjs";
 
 // const `${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}` = "./logs/chats/messages.json";
 
@@ -146,26 +147,26 @@ const pipelineAsync = promisify(pipeline);
 //   }
 // }
 
-class HistoryUpdater extends Transform {
-  constructor(filename, options = {}) {
-    super({ ...options, objectMode: true });
-    this.filename = filename;
-  }
+// class HistoryUpdater extends Transform {
+//   constructor(filename, options = {}) {
+//     super({ ...options, objectMode: true });
+//     this.filename = filename;
+//   }
 
-  async _transform(updatedHistory, encoding, callback) {
-    try {
-      await fs.promises.writeFile(
-        this.filename,
-        JSON.stringify(updatedHistory, null, 2)
-      );
+//   async _transform(updatedHistory, encoding, callback) {
+//     try {
+//       await fs.promises.writeFile(
+//         this.filename,
+//         JSON.stringify(updatedHistory, null, 2)
+//       );
 
-      this.push(updatedHistory);
-      callback();
-    } catch (error) {
-      callback(error);
-    }
-  }
-}
+//       this.push(updatedHistory);
+//       callback();
+//     } catch (error) {
+//       callback(error);
+//     }
+//   }
+// }
 
 // TODO: also implement switching chats
 async function processDeepSeekResponse(
@@ -182,7 +183,7 @@ async function processDeepSeekResponse(
   try {
     // add validation
     const chatHistory = await readChatHistory(
-      `${SERVER_PATH}${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}`
+      `${SERVER_PATH}${params.CHAT_HISTORY_DIR}${params.DEFAULT_CHAT}`
     );
 
     // push with validation
@@ -201,7 +202,7 @@ async function processDeepSeekResponse(
 
     const responseCollector = new ResponseCollector();
     const historyUpdater = new HistoryUpdater(
-      `${SERVER_PATH}${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}`
+      `${SERVER_PATH}${params.CHAT_HISTORY_DIR}${params.DEFAULT_CHAT}`
     );
 
     // if (res) this.setupStreamingResponse(res, responseCollector);
@@ -234,7 +235,7 @@ async function processDeepSeekResponse(
     return {
       success: true,
       data: await readChatHistory(
-        `${SERVER_PATH}${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}`
+        `${SERVER_PATH}${params.CHAT_HISTORY_DIR}${params.DEFAULT_CHAT}`
       ),
       streamed: !!res,
     };
@@ -401,11 +402,11 @@ async function handleStreamingResponse(req, res, message, parameters) {
   });
 
   try {
-    const filename = `${SERVER_PATH}${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}`;
+    const filename = `${SERVER_PATH}${params.CHAT_HISTORY_DIR}${params.DEFAULT_CHAT}`;
     // const chatHistory = await readChatHistoryWithValidation(filename);
     // const chatHistory = await readChatHistory(filename);
     const chatHistory = await readChatHistory(
-      params.CHAT_HISTORY_DIRS,
+      params.CHAT_HISTORY_DIR,
       params.DEFAULT_CHAT
     );
 
@@ -419,7 +420,10 @@ async function handleStreamingResponse(req, res, message, parameters) {
     const deepSeekStream = new DeepSeekStream(process.env.DEEPSEEK_API_KEY);
 
     const responseCollector = new ResponseCollector();
-    const historyUpdater = new HistoryUpdater(filename);
+    const historyUpdater = new HistoryUpdater(
+      params.CHAT_HISTORY_DIR,
+      params.DEFAULT_CHAT
+    );
 
     // TODO: backpressure awareness
     responseCollector.on("chunk", (content) => {

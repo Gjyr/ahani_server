@@ -1,5 +1,5 @@
 import { Transform } from "node:stream";
-import { ChatError, StreamProcessingError } from "../errors/AppError.mjs";
+import { ChatError, StreamProcessingError } from "../errors/ChatError.mjs";
 
 class ResponseCollector extends Transform {
   constructor(options = {}) {

@@ -1,7 +1,7 @@
 import { MIME_TYPES } from "../../../app/config/config.mjs";
 
 const params = Object.freeze({
-  CHAT_HISTORY_DIRS: "/logs/chats/",
+  CHAT_HISTORY_DIR: "/logs/chats/",
   DEFAULT_CHAT: "messages.json",
 
   NET_CONFIG: Object.freeze({
