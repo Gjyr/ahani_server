@@ -1,6 +1,6 @@
 import { MIME_TYPES } from "../../../app/config/config.mjs";
 
-export const params = Object.freeze({
+const params = Object.freeze({
   CHAT_HISTORY_DIRS: "/logs/chats/",
   DEFAULT_CHAT: "messages.json",
 
@@ -27,7 +27,9 @@ export const params = Object.freeze({
   }),
 });
 
-export function validateConfig() {
+function validateConfig() {
   if (!process.env.DEEPSEEK_API_KEY)
     throw new Error("Sending messages with the API Token set.");
 }
+
+export { params, validateConfig };

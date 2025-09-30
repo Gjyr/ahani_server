@@ -8,6 +8,7 @@ import { MIME_TYPES, SERVER_PATH } from "../../app/config/config.mjs";
 
 import { params, validateConfig } from "./config/deepseek.mjs";
 import { generateMessageId } from "./utils/idGenerator.mjs";
+import { readChatHistory } from "./utils/chatHistory.mjs";
 
 // const `${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}` = "./logs/chats/messages.json";
 
@@ -42,13 +43,13 @@ const DS_REFERENCE_PARAMS = Object.freeze({
 });
 */
 
-const DS_DEFAULTS = Object.seal({
-  model: "deepseek-chat",
-  temperature: 1.5,
-  stream: true,
-  max_tokens: 8192,
-  role: "user",
-});
+// const DS_DEFAULTS = Object.seal({
+//   model: "deepseek-chat",
+//   temperature: 1.5,
+//   stream: true,
+//   max_tokens: 8192,
+//   role: "user",
+// });
 
 const pipelineAsync = promisify(pipeline);
 
@@ -295,20 +296,20 @@ function sendSSEEvent(res, event, data) {
   }
 }
 
-async function readChatHistory(filename) {
-  try {
-    const data = await fs.promises.readFile(filename, "utf8");
+// async function readChatHistory(filename) {
+//   try {
+//     const data = await fs.promises.readFile(filename, "utf8");
 
-    return JSON.parse(data);
-  } catch (error) {
-    // TODO: should create new if doesn't exist?
-    return {
-      messages: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
+//     return JSON.parse(data);
+//   } catch (error) {
+//     // TODO: should create new if doesn't exist?
+//     return {
+//       messages: [],
+//       createdAt: new Date().toISOString(),
+//       updatedAt: new Date().toISOString(),
+//     };
+//   }
+// }
 
 async function processMessagePost(req, res) {
   const acceptsSSE = req.headers.accept === "text/event-stream";
@@ -400,7 +401,11 @@ async function handleStreamingResponse(req, res, message, parameters) {
   try {
     const filename = `${SERVER_PATH}${params.CHAT_HISTORY_DIRS}${params.DEFAULT_CHAT}`;
     // const chatHistory = await readChatHistoryWithValidation(filename);
-    const chatHistory = await readChatHistory(filename);
+    // const chatHistory = await readChatHistory(filename);
+    const chatHistory = await readChatHistory(
+      params.CHAT_HISTORY_DIRS,
+      params.DEFAULT_CHAT
+    );
 
     chatHistory.messages.push({
       role: parameters.role || params.DS_ROLE,

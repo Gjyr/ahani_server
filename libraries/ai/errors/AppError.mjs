@@ -1,4 +1,4 @@
-export class ChatError extends Error {
+class ChatError extends Error {
   constructor(message, context = {}, originalError = null) {
     super(message);
     this.name = this.constructor.name;
@@ -9,26 +9,34 @@ export class ChatError extends Error {
   }
 }
 
-export class ChatHistoryError extends ChatError {
+class ChatHistoryError extends ChatError {
   constructor(message, filename, operation, originalError = null) {
     super(message, { filename, operation }, originalError);
   }
 }
 
-export class DeepSeekAPIError extends ChatError {
+class DeepSeekAPIError extends ChatError {
   constructor(message, statusCode, requestBody, originalError = null) {
     super(message, { statusCode, requestBody }, originalError);
   }
 }
 
-export class StreamProcessingError extends ChatError {
+class StreamProcessingError extends ChatError {
   constructor(message, streamName, chunkInfo, originalError = null) {
     super(message, { streamName, chunkInfo }, originalError);
   }
 }
 
-export class ValidationError extends ChatError {
+class ValidationError extends ChatError {
   constructor(message, field, value, originalError = null) {
     super(message, { field, value }, originalError);
   }
 }
+
+export {
+  ChatError,
+  ChatHistoryError,
+  DeepSeekAPIError,
+  StreamProcessingError,
+  ValidationError,
+};
