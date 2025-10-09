@@ -3,6 +3,7 @@ import {
   PayloadTooLargeError,
   InvalidJSONError,
 } from "../errors/ChatError.mjs";
+import { MIME_TYPES } from "../../../app/config/config.mjs";
 
 function parseRequestBody(req, options = {}) {
   const {
