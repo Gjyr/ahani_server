@@ -24,4 +24,16 @@ function validateCharacter(data) {
   return true;
 }
 
-export { generateId, generateBackupCode, validateCharacter };
+function generateHumanReadableId() {
+  const prefixes = ["iris", "wolf", "dragon", "shadow", "crystal"];
+  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const numbers = Math.floor(1000 + Math.random() * 9000);
+  return `${prefix}-${numbers}`;
+}
+
+export {
+  generateId,
+  generateBackupCode,
+  validateCharacter,
+  generateHumanReadableId,
+};
