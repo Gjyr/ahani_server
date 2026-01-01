@@ -6,6 +6,7 @@ import { ENCODING, SERVER_PATH } from "#config";
 const BASE_DIR = path.join(SERVER_PATH, "libraries", "nagara");
 const DATA_DIR = path.join(BASE_DIR, "data", "characters");
 const INDEX_FILE = path.join(BASE_DIR, "data", "index.json");
+const ALIAS_FILE = path.join(BASE_DIR, "data", "aliases.json");
 
 (async function ensureDirectories() {
   try {
@@ -29,7 +30,13 @@ const INDEX_FILE = path.join(BASE_DIR, "data", "index.json");
   }
 })();
 
-// await ensureDirectories();
+async function createAlias(characterId, alias) {
+  // TODO
+}
+
+async function resolveAlias(alias) {
+  // TODO
+}
 
 await fs.mkdir(DATA_DIR, { recursive: true });
 
@@ -130,4 +137,6 @@ export {
   getCharactersByPlayer,
   findCharacterByNameAndCode,
   getAllCharacters,
+  createAlias,
+  resolveAlias,
 };
