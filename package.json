@@ -15,7 +15,8 @@
     "#controllers": "./app/api/controllers.mjs",
     "#logger": "./libraries/logging/logger.mjs",
     "#utilities": "./utils.mjs",
-    "#robot": "./libraries/ai/robot.mjs"
+    "#robot": "./libraries/ai/robot.mjs",
+    "#routers": "./routers/nagara.mjs"
   },
   "keywords": [
     "ahani",

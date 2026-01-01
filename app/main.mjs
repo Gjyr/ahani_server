@@ -1,6 +1,7 @@
 import { URL } from "node:url";
 import { serveSiteFiles, serveImages, loggerRout, aiRout } from "#controllers";
 import { LOCAL_ADDRESS, API_ROUTE } from "#config";
+import nagaraRout from "../routers/nagara.mjs";
 
 export default async function app(req, res) {
   const url = new URL(req.url, `http://${LOCAL_ADDRESS}/`);
@@ -11,5 +12,7 @@ export default async function app(req, res) {
     await loggerRout(req, res, url);
   else if (url.pathname.startsWith(`${API_ROUTE}/robot`))
     await aiRout(req, res, url);
+  else if (url.pathname.startsWith(`${API_ROUTE}/nagara`))
+    await nagaraRout(req, res, url);
   else await serveSiteFiles(req, res);
 }
