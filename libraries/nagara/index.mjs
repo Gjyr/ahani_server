@@ -1,16 +1,22 @@
-import { generateId, generateBackupCode, validateCharacter } from "./utils.mjs";
+import { generateId, generateBackupCode } from "./utils.mjs";
+import { createDefaultCharacter, validateCharacterData } from "./schema.mjs";
 import * as storage from "./storage.mjs";
 
 async function createCharacter(playerId, characterData) {
-  validateCharacter(characterData);
+  validateCharacterData(characterData);
+
+  const defaultCharacter = createDefaultCharacter(
+    playerId,
+    characterData.characterName,
+    characterData.player || "Unknown"
+  );
 
   const character = {
-    id: generateId(),
-    playerId,
-    backupCode: generateBackupCode(),
-    created: new Date().toISOString(),
-    lastModified: new Date().toISOString(),
+    ...defaultCharacter,
     ...characterData,
+    id: generateId(),
+    backupCode: generateBackupCode(),
+    playerId,
   };
 
   return await storage.saveCharacter(character);
@@ -36,13 +42,34 @@ async function updateCharacter(id, updates) {
   const existing = await storage.getCharacter(id);
   if (!existing) throw new Error("Character not found");
 
-  const updated = {
-    ...existing,
-    ...updates,
-    lastModified: new Date().toISOString(),
-  };
+  const updated = deepMerge(existing, updates);
+  updated.lastModified = new Date().toISOString();
 
   return await storage.saveCharacter(updated);
+}
+
+function deepMerge(target, source) {
+  const output = { ...target };
+
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach((key) => {
+      if (isObject(source[key])) {
+        if (!(key in target)) {
+          output[key] = source[key];
+        } else {
+          output[key] = deepMerge(target[key], source[key]);
+        }
+      } else {
+        output[key] = source[key];
+      }
+    });
+  }
+
+  return output;
+}
+
+function isObject(item) {
+  return item && typeof item === "object" && !Array.isArray(item);
 }
 
 export {
