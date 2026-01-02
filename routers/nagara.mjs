@@ -1,9 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import * as nagara from "../libraries/nagara/index.mjs";
-import { MIME_TYPES, SERVER_PATH } from "#config";
+import { MIME_TYPES, PUBLIC_PATH } from "#config";
 
-const FRONTEND_DIR = path.join(SERVER_PATH, "public", "nagara", "c");
+const FRONTEND_DIR = path.join(PUBLIC_PATH, "public", "nagara", "c");
 
 async function nagaraRout(req, res, url) {
   const { pathname } = url;
@@ -36,6 +36,7 @@ async function nagaraRout(req, res, url) {
     } catch (error) {
       try {
         const indexPath = path.join(FRONTEND_DIR, "index.html");
+        console.log(indexPath);
         const content = await fs.readFile(indexPath);
         res.setHeader("Content-Type", "text/html");
         res.writeHead(200);
@@ -45,6 +46,7 @@ async function nagaraRout(req, res, url) {
         res.end("Not found");
       }
     }
+
     return true;
   }
 
