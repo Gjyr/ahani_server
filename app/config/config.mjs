@@ -26,6 +26,8 @@ const MIME_TYPES = {
   webp: "image/webp",
   ico: "image/x-icon",
   svg: "image/svg+xml",
+  gif: "image/gif",
+  jpeg: "image/jpeg",
   mp3: "audio/mpeg",
   ttf: "font/ttf",
   json: "application/json",

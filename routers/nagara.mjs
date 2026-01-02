@@ -1,125 +1,208 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import * as nagara from "../libraries/nagara/index.mjs";
-import { MIME_TYPES } from "#config";
+import { MIME_TYPES, SERVER_PATH } from "#config";
+
+const FRONTEND_DIR = path.join(SERVER_PATH, "public", "nagara", "c");
 
 async function nagaraRout(req, res, url) {
   const { pathname } = url;
 
-  const pathParts = pathname
-    .replace("/api/v1/nagara", "")
-    .split("/")
-    .filter(Boolean);
+  const isApiRequest = pathname.startsWith("/api/v1/nagara");
+  const isFrontendRequest = pathname.startsWith("/nagara/c");
 
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Content-Type", MIME_TYPES.json);
+  if (!isApiRequest && !isFrontendRequest) return false;
 
-  try {
-    // Route: GET /api/v1/nagara/characters - Get characters for player
-    if (
-      req.method === "GET" &&
-      pathParts[0] === "characters" &&
-      !pathParts[1]
-    ) {
-      const playerId = url.searchParams.get("playerId");
+  if (isFrontendRequest) {
+    try {
+      let filePath = pathname.substring("/nagara/c".length);
+      if (filePath === "" || filePath === "/") filePath = "/index.html";
 
-      if (!playerId) {
-        // DM access - check for DM token (we'll implement later)
-        const dmToken = req.headers["x-dm-token"];
-        if (dmToken === process.env.DM_TOKEN) {
-          const allChars = await nagara.getAllCharacters();
-          res.writeHead(200);
-          res.end(JSON.stringify(allChars));
-        } else {
-          res.writeHead(400);
-          res.end(JSON.stringify({ error: "Player ID or DM token required" }));
-        }
-      } else {
-        const characters = await nagara.getPlayerCharacters(playerId);
+      const normalizedPath = path
+        .normalize(filePath)
+        .replace(/^(\.\.[\/\\])+/, "");
+      const fullPath = path.join(FRONTEND_DIR, normalizedPath);
+
+      const stat = await fs.stat(fullPath);
+      if (!stat.isFile()) throw new Error("Not a file");
+
+      const ext = path.extname(fullPath);
+      const mimeType = MIME_TYPES[ext];
+
+      res.setHeader("Content-Type", mimeType);
+      const content = await fs.readFile(fullPath);
+      res.writeHead(200);
+      res.end(content);
+    } catch (error) {
+      try {
+        const indexPath = path.join(FRONTEND_DIR, "index.html");
+        const content = await fs.readFile(indexPath);
+        res.setHeader("Content-Type", "text/html");
         res.writeHead(200);
-        res.end(JSON.stringify(characters));
-      }
-      return;
-    }
-
-    // Route: GET /api/v1/nagara/characters/:id - Get specific character
-    if (req.method === "GET" && pathParts[0] === "characters" && pathParts[1]) {
-      const character = await nagara.getCharacter(pathParts[1]);
-      if (character) {
-        res.writeHead(200);
-        res.end(JSON.stringify(character));
-      } else {
+        res.end(content);
+      } catch {
         res.writeHead(404);
-        res.end(JSON.stringify({ error: "Character not found" }));
+        res.end("Not found");
       }
-      return;
+    }
+    return true;
+  }
+
+  if (isApiRequest) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    if (req.method === "OPTIONS") {
+      res.writeHead(200);
+      res.end();
+      return true;
     }
 
-    // Route: POST /api/v1/nagara/characters - Create new character
-    if (req.method === "POST" && pathParts[0] === "characters") {
-      let body = "";
-      req.on("data", (chunk) => (body += chunk));
+    const pathParts = pathname
+      .replace("/api/v1/nagara", "")
+      .split("/")
+      .filter(Boolean);
 
-      req.on("end", async () => {
-        try {
-          const data = JSON.parse(body);
-          const playerId = data.playerId || req.headers["x-player-id"];
+    try {
+      if (
+        // GET /api/v1/nagara/characters - Get characters for me
+        req.method === "GET" &&
+        pathParts[0] === "characters" &&
+        !pathParts[1]
+      ) {
+        const playerId = url.searchParams.get("playerId");
 
-          if (!playerId) {
-            res.writeHead(400);
-            res.end(JSON.stringify({ error: "Player ID required" }));
-            return;
-          }
-
-          const character = await nagara.createCharacter(playerId, data);
-          res.writeHead(201);
-          res.end(JSON.stringify(character));
-        } catch (error) {
-          res.writeHead(400);
-          res.end(JSON.stringify({ error: error.message }));
-        }
-      });
-      return;
-    }
-
-    // Route: POST /api/v1/nagara/recover - Recover character
-    if (req.method === "POST" && pathParts[0] === "recover") {
-      let body = "";
-      req.on("data", (chunk) => (body += chunk));
-
-      req.on("end", async () => {
-        try {
-          const { characterName, backupCode } = JSON.parse(body);
-          const character = await nagara.recoverCharacter(
-            characterName,
-            backupCode
-          );
-
-          if (character) {
+        if (!playerId) {
+          const dmToken = req.headers["x-dm-token"];
+          if (dmToken === process.env.DM_TOKEN) {
+            const allChars = await nagara.getAllCharacters();
             res.writeHead(200);
-            res.end(JSON.stringify(character));
+            res.end(JSON.stringify(allChars));
           } else {
-            res.writeHead(404);
+            res.writeHead(400);
             res.end(
-              JSON.stringify({
-                error: "Character not found or invalid backup code",
-              })
+              JSON.stringify({ error: "Player ID or DM token required" })
             );
           }
-        } catch (error) {
-          res.writeHead(400);
-          res.end(JSON.stringify({ error: error.message }));
+        } else {
+          // GET /api/v1/nagara/characters - Get characters for player
+          const characters = await nagara.getPlayerCharacters(playerId);
+          res.writeHead(200);
+          res.end(JSON.stringify(characters));
         }
-      });
-      return;
+        return;
+      }
+
+      if (
+        // GET /api/v1/nagara/characters/:id - Get specific character
+        req.method === "GET" &&
+        pathParts[0] === "characters" &&
+        pathParts[1]
+      ) {
+        const character = await nagara.getCharacter(pathParts[1]);
+        if (character) {
+          res.writeHead(200);
+          res.end(JSON.stringify(character));
+        } else {
+          res.writeHead(404);
+          res.end(JSON.stringify({ error: "Character not found" }));
+        }
+        return;
+      }
+
+      if (req.method === "POST" && pathParts[0] === "characters") {
+        // POST /api/v1/nagara/characters - Create new character
+        let body = "";
+        req.on("data", (chunk) => (body += chunk));
+
+        req.on("end", async () => {
+          try {
+            const data = JSON.parse(body);
+            const playerId = data.playerId || req.headers["x-player-id"];
+
+            if (!playerId) {
+              res.writeHead(400);
+              res.end(JSON.stringify({ error: "Player ID required" }));
+              return;
+            }
+
+            const character = await nagara.createCharacter(playerId, data);
+            res.writeHead(201);
+            res.end(JSON.stringify(character));
+          } catch (error) {
+            res.writeHead(400);
+            res.end(JSON.stringify({ error: error.message }));
+          }
+        });
+        return;
+      }
+
+      if (req.method === "POST" && pathParts[0] === "recover") {
+        // POST /api/v1/nagara/recover - Recover character
+        let body = "";
+        req.on("data", (chunk) => (body += chunk));
+
+        req.on("end", async () => {
+          try {
+            const { characterName, backupCode } = JSON.parse(body);
+            const character = await nagara.recoverCharacter(
+              characterName,
+              backupCode
+            );
+
+            if (character) {
+              res.writeHead(200);
+              res.end(JSON.stringify(character));
+            } else {
+              res.writeHead(404);
+              res.end(
+                JSON.stringify({
+                  error: "Character not found or invalid backup code",
+                })
+              );
+            }
+          } catch (error) {
+            res.writeHead(400);
+            res.end(JSON.stringify({ error: error.message }));
+          }
+        });
+        return;
+      }
+
+      if (req.method === "GET" && pathParts[0] === "config") {
+        res.writeHead(200);
+        res.end(
+          JSON.stringify({
+            apiBase: "/api/v1/nagara",
+            maxFileSize: 10485760, // 10MB?
+            allowedImageTypes: [
+              MIME_TYPES["jpeg"],
+              MIME_TYPES["png"],
+              MIME_TYPES["gif"],
+              MIME_TYPES["webp"],
+            ],
+          })
+        );
+        return true;
+      }
+
+      // not found
+      res.writeHead(404);
+      res.end(JSON.stringify({ error: "Not found" }));
+    } catch (error) {
+      console.error("Nagara API error:", error);
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: "Internal server error" }));
     }
 
-    // Route not found
-    res.writeHead(404);
-    res.end(JSON.stringify({ error: "Not found" }));
-  } catch (error) {
-    console.error("Nagara route error:", error);
-    res.writeHead(500);
-    res.end(JSON.stringify({ error: "Internal server error" }));
+    return true;
   }
+
+  return false;
 }
 
 export default nagaraRout;
