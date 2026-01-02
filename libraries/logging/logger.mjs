@@ -38,7 +38,7 @@ async function logEvent(req, res) {
   await req.on("end", async () => {
     const body = Buffer.concat(bodyChunks);
 
-    if (req.headers["content-type"] === MIME_TYPES.json) {
+    if (req.headers["content-type"] === MIME_TYPES["json"]) {
       try {
         const data = JSON.parse(body);
 
@@ -46,11 +46,11 @@ async function logEvent(req, res) {
           await log(data, req.connection, formatMessage);
 
         res.statusCode = 200;
-        res.setHeader("Content-Type", MIME_TYPES.json);
+        res.setHeader("Content-Type", MIME_TYPES["json"]);
         res.end(JSON.stringify({ message: "Event captured!", data }));
       } catch (serverError) {
         res.statusCode = 400;
-        res.setHeader("Content-Type", MIME_TYPES.plain);
+        res.setHeader("Content-Type", MIME_TYPES["plain"]);
         return res.end(
           `Something went wrong while trying to log event: ${serverError.name}: ${serverError.message},\n ${serverError.stack}`
         );
@@ -61,11 +61,11 @@ async function logEvent(req, res) {
         await log({ content: { message: data } }, req.connection);
 
         res.statusCode = 200;
-        res.setHeader("Content-Type", MIME_TYPES.plain);
+        res.setHeader("Content-Type", MIME_TYPES["plain"]);
         res.end(`Received raw body: ${body}`);
       } catch (serverError) {
         res.statusCode = 400;
-        res.setHeader("Content-Type", MIME_TYPES.plain);
+        res.setHeader("Content-Type", MIME_TYPES["plain"]);
         res.end(
           `Bad request: ${serverError.name}: ${serverError.message},\n ${serverError.stack}`
         );
@@ -79,7 +79,7 @@ async function getEvents(req, res, url) {
   try {
     fs.access(LOG_FILE_PATH, fs.constants.F_OK, async (acessError) => {
       if (acessError) {
-        res.writeHead(404, { "Content-Type": MIME_TYPES.plain });
+        res.writeHead(404, { "Content-Type": MIME_TYPES["plain"] });
         res.end("Something happened to the file");
         return;
       }
@@ -121,7 +121,7 @@ async function getEvents(req, res, url) {
     });
   } catch (serverError) {
     res.statusCode = 400;
-    res.setHeader("Content-Type", MIME_TYPES.plain);
+    res.setHeader("Content-Type", MIME_TYPES["plain"]);
     res.end("Couldn't send the log file");
   }
 }

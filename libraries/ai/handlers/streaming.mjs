@@ -20,7 +20,7 @@ async function handleStreamingResponse(
   apiKey
 ) {
   res.writeHead(200, {
-    "Content-Type": MIME_TYPES.stream,
+    "Content-Type": MIME_TYPES["stream"],
     "Cache-Control": "no-cache",
     Connection: "keep-alive",
   });

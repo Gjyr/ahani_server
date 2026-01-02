@@ -30,7 +30,7 @@ async function processMessagePost(req, res) {
         requestBody.message
       );
 
-    const acceptsSSE = req.headers.accept === MIME_TYPES.stream;
+    const acceptsSSE = req.headers.accept === MIME_TYPES["stream"];
 
     const { message, parameters, chatFile = "messages.json" } = requestBody;
 
@@ -60,7 +60,7 @@ async function processMessagePost(req, res) {
       console.error("Route handler error: ", error);
       if (!res.headersSent) {
         res.writeHead(500, {
-          "Content-Type": MIME_TYPES.stream,
+          "Content-Type": MIME_TYPES["stream"],
           "Cache-Control": "no-cache",
         });
       }

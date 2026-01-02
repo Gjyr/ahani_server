@@ -113,7 +113,7 @@ function getJSONErrorPosition(body, error) {
 
 function sendErrorResponse(res, status, data) {
   if (!res.headersSent)
-    res.writeHead(status, { "Content-Type": MIME_TYPES.json });
+    res.writeHead(status, { "Content-Type": MIME_TYPES["json"] });
 
   res.end(JSON.stringify(data));
 }

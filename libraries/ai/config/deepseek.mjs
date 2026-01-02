@@ -10,8 +10,8 @@ const params = Object.freeze({
     port: 443,
     method: "POST",
     headers: {
-      "Content-Type": MIME_TYPES.json,
-      Accept: MIME_TYPES.json,
+      "Content-Type": MIME_TYPES["json"],
+      Accept: MIME_TYPES["json"],
       "User-Agent": "Ahani/1.0",
       Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
     },

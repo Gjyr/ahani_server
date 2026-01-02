@@ -75,7 +75,7 @@ async function serveSiteFiles(req, res) {
     isUnsupported = !isChrome(req.headers) || !isDesktop(req.headers);
 
   const file = await prepareFile(req.url, isUnsupported);
-  const mimeType = MIME_TYPES[file.ext] || MIME_TYPES.default;
+  const mimeType = MIME_TYPES[file.ext] || MIME_TYPES["default"];
 
   setHeaders(res, mimeType, file.found);
 
@@ -101,7 +101,7 @@ async function loggerRout(req, res, url) {
   else if (req.method === "GET") await getEvents(req, res, url);
   else {
     res.statusCode = 400;
-    res.setHeader("Content-Type", MIME_TYPES.plain);
+    res.setHeader("Content-Type", MIME_TYPES["plain"]);
     res.end(`Unsupported request`);
   }
 }
@@ -112,7 +112,7 @@ async function aiRout(req, res) {
   else if (req.method === "POST") await processMessagePost(req, res);
   else {
     res.statusCode = 400;
-    res.setHeader("Content-Type", MIME_TYPES.plain);
+    res.setHeader("Content-Type", MIME_TYPES["plain"]);
     res.end(`I need to implement some exception handling`);
   }
 }
