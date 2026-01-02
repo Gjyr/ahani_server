@@ -36,7 +36,6 @@ async function nagaraRout(req, res, url) {
     } catch (error) {
       try {
         const indexPath = path.join(FRONTEND_DIR, "index.html");
-        console.log(indexPath);
         const content = await fs.readFile(indexPath);
         res.setHeader("Content-Type", "text/html");
         res.writeHead(200);
