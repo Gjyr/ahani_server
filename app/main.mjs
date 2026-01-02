@@ -12,7 +12,8 @@ export default async function app(req, res) {
     await loggerRout(req, res, url);
   else if (url.pathname.startsWith(`${API_ROUTE}/robot`))
     await aiRout(req, res, url);
-  else if (url.pathname.startsWith(`${API_ROUTE}/nagara`))
-    await nagaraRout(req, res, url);
+  // else if (url.pathname.startsWith(`${API_ROUTE}/nagara`))
+  //   await nagaraRout(req, res, url);
+  else if (await nagaraRout(req, res, url)) return;
   else await serveSiteFiles(req, res);
 }
