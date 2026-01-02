@@ -96,7 +96,7 @@ async function nagaraRout(req, res, url) {
           res.writeHead(200);
           res.end(JSON.stringify(characters));
         }
-        return;
+        return true;
       }
 
       if (
@@ -113,7 +113,7 @@ async function nagaraRout(req, res, url) {
           res.writeHead(404);
           res.end(JSON.stringify({ error: "Character not found" }));
         }
-        return;
+        return true;
       }
 
       if (req.method === "POST" && pathParts[0] === "characters") {
@@ -140,7 +140,7 @@ async function nagaraRout(req, res, url) {
             res.end(JSON.stringify({ error: error.message }));
           }
         });
-        return;
+        return true;
       }
 
       if (req.method === "POST" && pathParts[0] === "recover") {
@@ -172,7 +172,7 @@ async function nagaraRout(req, res, url) {
             res.end(JSON.stringify({ error: error.message }));
           }
         });
-        return;
+        return true;
       }
 
       if (req.method === "GET" && pathParts[0] === "config") {
