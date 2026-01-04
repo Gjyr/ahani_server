@@ -15,6 +15,8 @@ const PUBLIC_PATH = join(
 const ENCODING = "utf8";
 const API_ROUTE = "/api/v1";
 
+const DM_TOKEN = process.env.NAGARA_DM_TOKEN;
+
 const MIME_TYPES = {
   default: "application/octet-stream",
   plain: "text/plain",
@@ -88,4 +90,5 @@ export {
   SERVER_PATH,
   LEVEL_NUMBERS,
   LOGGER_DEFAULT_CONFIG,
+  DM_TOKEN,
 };

@@ -1,7 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import * as nagara from "../libraries/nagara/index.mjs";
 import { MIME_TYPES, PUBLIC_PATH } from "#config";
+import { requireDmToken } from "../libraries/nagara/auth.mjs";
+import * as nagara from "../libraries/nagara/index.mjs";
+import * as backup from "../libraries/nagara/backup.mjs";
 
 const FRONTEND_DIR = path.join(PUBLIC_PATH, "public", "nagara", "c");
 
@@ -70,7 +72,7 @@ async function nagaraRout(req, res, url) {
 
     try {
       if (
-        // GET /api/v1/nagara/characters - Get characters for me
+        // GET /api/v1/nagara/characters -- Get characters for me
         req.method === "GET" &&
         pathParts[0] === "characters" &&
         !pathParts[1]
@@ -90,7 +92,7 @@ async function nagaraRout(req, res, url) {
             );
           }
         } else {
-          // GET /api/v1/nagara/characters - Get characters for player
+          // GET /api/v1/nagara/characters -- Get characters for player
           const characters = await nagara.getPlayerCharacters(playerId);
           res.writeHead(200);
           res.end(JSON.stringify(characters));
@@ -99,7 +101,7 @@ async function nagaraRout(req, res, url) {
       }
 
       if (
-        // GET /api/v1/nagara/characters/:id - Get specific character
+        // GET /api/v1/nagara/characters/:id -- Get specific character
         req.method === "GET" &&
         pathParts[0] === "characters" &&
         pathParts[1]
@@ -116,7 +118,7 @@ async function nagaraRout(req, res, url) {
       }
 
       if (req.method === "POST" && pathParts[0] === "characters") {
-        // POST /api/v1/nagara/characters - Create new character
+        // POST /api/v1/nagara/characters -- Create new character
         let body = "";
         req.on("data", (chunk) => (body += chunk));
 
@@ -143,7 +145,7 @@ async function nagaraRout(req, res, url) {
       }
 
       if (req.method === "POST" && pathParts[0] === "recover") {
-        // POST /api/v1/nagara/recover - Recover character
+        // POST /api/v1/nagara/recover -- Recover character
         let body = "";
         req.on("data", (chunk) => (body += chunk));
 
@@ -188,6 +190,78 @@ async function nagaraRout(req, res, url) {
             ],
           })
         );
+        return true;
+      }
+
+      if (
+        // POST /api/v1/nagara/backups/characters/:id -- Backup a character
+        req.method === "POST" &&
+        pathParts[0] === "backups" &&
+        pathParts[1] === "characters" &&
+        pathParts[2]
+      ) {
+        const characterId = pathParts[2];
+        requireDmToken(req);
+
+        let body = "";
+        req.on("data", (chunk) => (body += chunk));
+        req.on("end", async () => {
+          try {
+            const { note } = JSON.parse(body || "{}");
+            const backupRecord = await backup.createCharacterBackup(
+              characterId,
+              note
+            );
+            res.writeHead(201, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(backupRecord));
+          } catch (error) {
+            res.writeHead(500);
+            res.end(JSON.stringify({ error: error.message }));
+          }
+        });
+        return true;
+      }
+
+      // GET /api/v1/nagara/backups/characters[/:id] -- list backups
+      if (
+        req.method === "GET" &&
+        pathParts[0] === "backups" &&
+        pathParts[1] === "characters"
+      ) {
+        requireDmToken(req);
+        const characterId = pathParts[2]; // might be undefined
+        try {
+          const backupList = await backup.listCharacterBackups(characterId);
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify(backupList));
+        } catch (error) {
+          res.writeHead(500);
+          res.end(JSON.stringify({ error: error.message }));
+        }
+        return true;
+      }
+
+      if (
+        // POST /api/v1/nagara/backups/restore -- restore character from a backup
+        req.method === "POST" &&
+        pathParts[0] === "backups" &&
+        pathParts[1] === "restore"
+      ) {
+        requireDmToken(req);
+        let body = "";
+        req.on("data", (chunk) => (body += chunk));
+        req.on("end", async () => {
+          try {
+            const { backupId } = JSON.parse(body);
+            if (!backupId) throw new Error("Missing backupId");
+            const result = await backup.restoreCharacterBackup(backupId);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(result));
+          } catch (error) {
+            res.writeHead(400); // or 404 if not found
+            res.end(JSON.stringify({ error: error.message }));
+          }
+        });
         return true;
       }
 

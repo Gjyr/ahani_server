@@ -4,13 +4,16 @@ import { fileURLToPath } from "node:url";
 import { ENCODING, SERVER_PATH } from "#config";
 
 const BASE_DIR = path.join(SERVER_PATH, "libraries", "nagara");
-const DATA_DIR = path.join(BASE_DIR, "data", "characters");
+const LIVE_DATA_DIR = path.join(BASE_DIR, "data", "characters");
 const INDEX_FILE = path.join(BASE_DIR, "data", "index.json");
 const ALIAS_FILE = path.join(BASE_DIR, "data", "aliases.json");
+const BACKUP_ROOT_DIR = path.join(BASE_DIR, "data", "backups");
+const BACKUP_CHAR_DIR = path.join(BACKUP_ROOT_DIR, "characters");
+const BACKUP_INDEX = path.join(BACKUP_ROOT_DIR, "index.json");
 
 (async function ensureDirectories() {
   try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.mkdir(LIVE_DATA_DIR, { recursive: true });
   } catch (error) {
     console.error("Failed to create data directory:", error);
 
@@ -21,14 +24,19 @@ const ALIAS_FILE = path.join(BASE_DIR, "data", "aliases.json");
         "nagara",
         "data"
       );
-      DATA_DIR = path.join(fallbackDir, "characters");
+      LIVE_DATA_DIR = path.join(fallbackDir, "characters");
       INDEX_FILE = path.join(fallbackDir, "index.json");
-      await fs.mkdir(DATA_DIR, { recursive: true });
+      await fs.mkdir(LIVE_DATA_DIR, { recursive: true });
     } else {
       throw error;
     }
   }
 })();
+
+async function ensureBackupDirs() {
+  const fs = await import("fs/promises");
+  await fs.mkdir(BACKUP_CHAR_DIR, { recursive: true });
+}
 
 async function createAlias(characterId, alias) {
   // TODO
@@ -38,7 +46,7 @@ async function resolveAlias(alias) {
   // TODO
 }
 
-await fs.mkdir(DATA_DIR, { recursive: true });
+await fs.mkdir(LIVE_DATA_DIR, { recursive: true });
 
 let characterIndex = {};
 
@@ -61,7 +69,7 @@ async function saveIndex() {
 }
 
 async function saveCharacter(character) {
-  const filename = path.join(DATA_DIR, `${character.id}.json`);
+  const filename = path.join(LIVE_DATA_DIR, `${character.id}.json`);
 
   characterIndex.byId[character.id] = {
     name: character.characterName,
@@ -91,7 +99,7 @@ async function saveCharacter(character) {
 
 async function getCharacter(id) {
   try {
-    const filename = path.join(DATA_DIR, `${id}.json`);
+    const filename = path.join(LIVE_DATA_DIR, `${id}.json`);
     const data = await fs.readFile(filename, ENCODING);
     return JSON.parse(data);
   } catch {
@@ -139,4 +147,8 @@ export {
   getAllCharacters,
   createAlias,
   resolveAlias,
+  ensureBackupDirs,
+  LIVE_DATA_DIR,
+  BACKUP_CHAR_DIR,
+  BACKUP_INDEX,
 };
