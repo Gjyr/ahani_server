@@ -128,7 +128,7 @@ async function getEvents(req, res, url) {
 
 async function log(
   data,
-  client,
+  client = "",
   format = LOGGER_DEFAULT_CONFIG.format,
   to = LOGGER_DEFAULT_CONFIG.to
 ) {
