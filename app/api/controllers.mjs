@@ -84,6 +84,7 @@ async function serveSiteFiles(req, res) {
 
 // TODO: hold route
 async function serveImages(imagePath, res) {
+  // TODO: separators
   fs.readFile(
     `${PUBLIC_PATH}\\assets\\images\\trp\\${imagePath}main.webp`,
     (err, content) => {
