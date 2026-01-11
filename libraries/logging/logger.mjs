@@ -31,6 +31,10 @@ const transports = {
   toConsole: function () {},
 };
 
+function logServerEvent(type, message) {
+  log({ content: { message } }, "server", formatMessage, "toFile");
+}
+
 async function logEvent(req, res) {
   const bodyChunks = [];
 
@@ -142,4 +146,4 @@ async function log(
   );
 }
 
-export { logEvent, getEvents };
+export { logEvent, getEvents, logServerEvent };

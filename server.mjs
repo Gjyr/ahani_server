@@ -2,7 +2,7 @@ import https from "node:https";
 import http from "node:http";
 import app from "#app";
 import { PORT, SSL, LOCAL_ADDRESS } from "#config";
-import { log } from "#logger";
+import { logServerEvent } from "#logger";
 
 const server =
   process.env.NODE_ENV === "development"
@@ -26,8 +26,6 @@ function handleShutdown() {
       process.exit(1);
     }
 
-    //
-
     console.log("Server closed. Exiting process.");
     process.exit(0);
   });
@@ -42,7 +40,7 @@ process.on("SIGTERM", handleShutdown);
 process.on("SIGINT", handleShutdown);
 
 process.on("uncaughtException", (error, origin) => {
-  log(error, origin);
+  logServerEvent(error.message, origin);
 
   console.error("FATAL - Uncaught Exception:", error);
   console.error("Exception origin:", origin);
@@ -51,7 +49,7 @@ process.on("uncaughtException", (error, origin) => {
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-  log(error, origin);
+  logServerEvent(error.message, origin);
 
   console.error(
     "FATAL - Unhandled Promise Rejection at:",
