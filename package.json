@@ -5,9 +5,9 @@
   "type": "module",
   "main": "server.mjs",
   "scripts": {
-    "start:dev": "nodemon --env-file-if-exists=ahani.dev.env server.mjs",
-    "start:prod": "node --env-file-if-exists=ahani.prod.env server.mjs",
-    "start:debug": "node --inspect server.mjs"
+    "start:dev": "nodemon --env-file-if-exists=ahani.dev.env watcher.js",
+    "start:prod": "node --env-file-if-exists=ahani.prod.env watcher.js",
+    "start:debug": "node --inspect watcher.js"
   },
   "imports": {
     "#app": "./app/main.mjs",
