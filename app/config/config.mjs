@@ -10,7 +10,7 @@ const LOG_FILE_PATH = join(SEPARATOR, SERVER_PATH, "/logs/server.log");
 const PUBLIC_PATH = join(
   SEPARATOR,
   ...SERVER_PATH.split(sep).slice(0, -1),
-  "/ahani"
+  "/ahani",
 );
 const ENCODING = "utf8";
 const API_ROUTE = "/api/v1";
