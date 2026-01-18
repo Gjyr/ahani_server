@@ -28,7 +28,7 @@ async function nagaraRout(req, res, url) {
       const stat = await fs.stat(fullPath);
       if (!stat.isFile()) throw new Error("Not a file");
 
-      const ext = path.extname(fullPath);
+      const ext = path.extname(fullPath).slice(1);
       const mimeType = MIME_TYPES[ext];
 
       res.setHeader("Content-Type", mimeType);
@@ -55,9 +55,9 @@ async function nagaraRout(req, res, url) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader(
       "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, OPTIONS"
+      "GET, POST, PUT, DELETE, OPTIONS",
     );
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-player-id");
 
     if (req.method === "OPTIONS") {
       res.writeHead(200);
@@ -88,7 +88,7 @@ async function nagaraRout(req, res, url) {
           } else {
             res.writeHead(400);
             res.end(
-              JSON.stringify({ error: "Player ID or DM token required" })
+              JSON.stringify({ error: "Player ID or DM token required" }),
             );
           }
         } else {
@@ -154,7 +154,7 @@ async function nagaraRout(req, res, url) {
             const { characterName, backupCode } = JSON.parse(body);
             const character = await nagara.recoverCharacter(
               characterName,
-              backupCode
+              backupCode,
             );
 
             if (character) {
@@ -165,7 +165,7 @@ async function nagaraRout(req, res, url) {
               res.end(
                 JSON.stringify({
                   error: "Character not found or invalid backup code",
-                })
+                }),
               );
             }
           } catch (error) {
@@ -188,7 +188,7 @@ async function nagaraRout(req, res, url) {
               MIME_TYPES["gif"],
               MIME_TYPES["webp"],
             ],
-          })
+          }),
         );
         return true;
       }
@@ -210,7 +210,7 @@ async function nagaraRout(req, res, url) {
             const { note } = JSON.parse(body || "{}");
             const backupRecord = await backup.createCharacterBackup(
               characterId,
-              note
+              note,
             );
             res.writeHead(201, { "Content-Type": "application/json" });
             res.end(JSON.stringify(backupRecord));
