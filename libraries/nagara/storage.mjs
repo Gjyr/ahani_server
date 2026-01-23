@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ENCODING, SERVER_PATH } from "#config";
+import { deepEqual } from "node:assert";
 
 const BASE_DIR = path.join(SERVER_PATH, "libraries", "nagara");
 const LIVE_DATA_DIR = path.join(BASE_DIR, "data", "characters");
@@ -22,7 +23,7 @@ const BACKUP_INDEX = path.join(BACKUP_ROOT_DIR, "index.json");
         process.cwd(),
         "libraries",
         "nagara",
-        "data"
+        "data",
       );
       LIVE_DATA_DIR = path.join(fallbackDir, "characters");
       INDEX_FILE = path.join(fallbackDir, "index.json");
@@ -113,7 +114,7 @@ async function getCharactersByPlayer(playerId) {
 
   for (const id of charIds) {
     const char = await getCharacter(id);
-    if (char) characters.push(char);
+    if (char && !char.deleted) characters.push(char);
   }
 
   return characters;
@@ -139,6 +140,49 @@ async function getAllCharacters() {
   return characters;
 }
 
+async function markCharacterAsDeleted(characterId) {
+  if (characterIndex.byId[characterId]) {
+    characterIndex.byId[characterId].deleted = true;
+    characterIndex.byId[characterId].deletedAt = new Date().toISOString();
+    await saveIndex();
+  }
+}
+
+async function hardDeleteCharacter(characterId) {
+  try {
+    const filename = path.join(LIVE_DATA_DIR, `${characterId}.json`);
+    await fs.unlink(filename);
+
+    const charInfo = characterIndex.byId[characterId];
+    if (charInfo) {
+      delete characterIndex.byId[characterId];
+
+      delete characterIndex.byBackupCode[charInfo.backupCode];
+
+      if (characterIndex.byPlayer[charInfo.playerId]) {
+        characterIndex.byPlayer[charInfo.playerId] = characterIndex.byPlayer[
+          charInfo.playerId
+        ].filter((id) => id !== characterId);
+
+        if (characterIndex.byPlayer[charInfo.playerId].length === 0) {
+          delete characterIndex.byPlayer[charInfo.playerId];
+        }
+      }
+
+      characterIndex.all = characterIndex.all.filter(
+        (id) => id !== characterId,
+      );
+
+      await saveIndex();
+    }
+
+    return true;
+  } catch (error) {
+    console.log("Hard delete failed:", error);
+    throw new Error("Failed to delete character");
+  }
+}
+
 export {
   saveCharacter,
   getCharacter,
@@ -151,4 +195,6 @@ export {
   LIVE_DATA_DIR,
   BACKUP_CHAR_DIR,
   BACKUP_INDEX,
+  markCharacterAsDeleted,
+  hardDeleteCharacter,
 };

@@ -1,7 +1,7 @@
 import { renderDashboard } from "../templates/dashboard.mjs";
 import * as nagara from "../index.mjs";
 
-export async function handleDashboardView(req, res, playerId) {
+export async function renderDashboardView(req, res, playerId) {
     // if (!playerId) {
     //     res.writeHead(401, { 
     //         'Content-Type': 'text/html',
@@ -28,7 +28,11 @@ export async function handleDashboardView(req, res, playerId) {
         const characters = await nagara.getPlayerCharacters(playerId);
         const html = renderDashboard(characters);
 
-        res.writeHead(200);
+        res.writeHead(200, {
+            'Content-Type': 'text/html',
+            'Content-Length': Buffer.byteLength(html),
+            'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+        });
         res.end(html);
     }
     return true;

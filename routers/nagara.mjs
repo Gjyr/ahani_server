@@ -5,8 +5,11 @@ import { requireDmToken } from "../libraries/nagara/auth.mjs";
 import * as nagara from "../libraries/nagara/index.mjs";
 import * as backup from "../libraries/nagara/backup.mjs";
 
-import { handleDashboardView } from "../libraries/nagara/handlers/handleDashboardView.mjs";
+import { renderDashboardView } from "../libraries/nagara/handlers/renderDashboardView.mjs";
 import { handleGetCharacters } from "../libraries/nagara/handlers/handleGetCharacters.mjs";
+import { renderInitialView } from "../libraries/nagara/handlers/renderInitialView.mjs";
+import { renderCreationView } from "../libraries/nagara/handlers/renderCreationView.mjs";
+import { generateHumanReadableId } from "../libraries/nagara/utils.mjs";
 
 const FRONTEND_DIR = path.join(PUBLIC_PATH, "public", "nagara", "c");
 
@@ -20,6 +23,7 @@ async function nagaraRout(req, res, url) {
 
   if (isFrontendRequest) {
     try {
+      console.log("frontend request");
       let filePath = pathname.substring("/nagara/c".length);
       if (filePath === "" || filePath === "/") filePath = "/index.html";
 
@@ -39,6 +43,7 @@ async function nagaraRout(req, res, url) {
       res.writeHead(200);
       res.end(content);
     } catch (error) {
+      console.log("this error", error);
       try {
         const indexPath = path.join(FRONTEND_DIR, "index.html");
         const content = await fs.readFile(indexPath);
@@ -60,7 +65,10 @@ async function nagaraRout(req, res, url) {
       "Access-Control-Allow-Methods",
       "GET, POST, PUT, DELETE, OPTIONS",
     );
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-player-id");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, x-player-id, x-dm-id",
+    );
 
     if (req.method === "OPTIONS") {
       res.writeHead(200);
@@ -110,10 +118,29 @@ async function nagaraRout(req, res, url) {
         pathParts[0] === "view" &&
         pathParts[1] === "dashboard"
       ) {
+        //@TODO: move inside
         const playerId = req.headers["x-player-id"];
 
         //@TODO: what if no playerID
-        return await handleDashboardView(req, res, playerId);
+        return await renderDashboardView(req, res, playerId);
+      }
+
+      if (
+        // GET /api/v1/nagara/view/initial
+        req.method === "GET" &&
+        pathParts[0] === "view" &&
+        pathParts[1] === "initial"
+      ) {
+        return await renderInitialView(req, res);
+      }
+
+      if (
+        // GET /api/v1/nagara/view/creation
+        req.method === "GET" &&
+        pathParts[0] === "view" &&
+        pathParts[1] === "creation"
+      ) {
+        return await renderCreationView(req, res);
       }
 
       if (
@@ -133,20 +160,73 @@ async function nagaraRout(req, res, url) {
         return true;
       }
 
+      if (
+        // DELETE /api/v1/nagara/characters/:id -- Get specific character
+        req.method === "DELETE" &&
+        pathParts[0] === "characters" &&
+        pathParts[1]
+      ) {
+        const characterId = pathParts[1];
+
+        try {
+          const dmToken = req.headers["x-dm-id"];
+          const playerId = req.headers["x-player-id"];
+
+          if (!dmToken && !playerId) {
+            res.writeHead(400);
+            res.end(JSON.stringify({ error: "Authorization required" }));
+            return true;
+          }
+
+          let result;
+          if (dmToken) {
+            result = await nagara.deleteCharacterAsDM(characterId, dmToken);
+          } else {
+            result = await nagara.deleteCharacterAsPlayer(
+              characterId,
+              playerId,
+            );
+          }
+
+          if (result.success) {
+            res.writeHead(200);
+            res.end(
+              JSON.stringify({
+                message: "Character deleted",
+                type: result.type,
+              }),
+            );
+          } else {
+            res.writeHead(result.statusCode || 404);
+            res.end(JSON.stringify({ error: result.error }));
+          }
+        } catch (error) {
+          console.error("DELETE error:", error);
+          res.writeHead(500);
+          res.end(JSON.stringify({ error: "Internal server error" }));
+        }
+
+        return true;
+      }
+
       if (req.method === "POST" && pathParts[0] === "characters") {
         // POST /api/v1/nagara/characters -- Create new character
+        //@TODO: its own module
+
         let body = "";
         req.on("data", (chunk) => (body += chunk));
 
         req.on("end", async () => {
           try {
             const data = JSON.parse(body);
-            const playerId = data.playerId || req.headers["x-player-id"];
+            let playerId = data.playerId || req.headers["x-player-id"];
 
             if (!playerId) {
-              res.writeHead(400);
-              res.end(JSON.stringify({ error: "Player ID required" }));
-              return;
+              // res.writeHead(400);
+              // res.end(JSON.stringify({ error: "Player ID required" }));
+              // return;
+
+              playerId = generateHumanReadableId();
             }
 
             const character = await nagara.createCharacter(playerId, data);

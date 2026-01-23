@@ -9,4 +9,8 @@ function requireDmToken(req) {
   }
 }
 
-export { requireDmToken };
+function validateDmToken(token) {
+  return token === DM_TOKEN;
+}
+
+export { requireDmToken, validateDmToken };

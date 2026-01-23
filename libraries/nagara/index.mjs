@@ -1,6 +1,9 @@
 import { generateId, generateBackupCode } from "./utils.mjs";
 import { createDefaultCharacter, validateCharacterData } from "./schema.mjs";
 import * as storage from "./storage.mjs";
+import { error } from "node:console";
+import { stat } from "node:fs";
+import { validateDmToken } from "./auth.mjs";
 
 async function createCharacter(playerId, characterData) {
   validateCharacterData(characterData);
@@ -8,7 +11,7 @@ async function createCharacter(playerId, characterData) {
   const defaultCharacter = createDefaultCharacter(
     playerId,
     characterData.characterName,
-    characterData.player || "Unknown"
+    characterData.player || "Unknown",
   );
 
   const character = {
@@ -48,6 +51,59 @@ async function updateCharacter(id, updates) {
   return await storage.saveCharacter(updated);
 }
 
+async function deleteCharacterAsPlayer(characterId, playerId) {
+  const character = await storage.getCharacter(characterId);
+
+  if (!character) {
+    return { success: false, error: "Character not found", statusCode: 404 };
+  }
+
+  if (character.playerId !== playerId) {
+    return {
+      success: false,
+      error: "Unathorized: You don't own this character",
+      statusCode: 403,
+    };
+  }
+
+  const updatedCharacter = {
+    ...character,
+    deleted: true,
+    deleteAt: new Date().toISOString(),
+    deletedBy: "player",
+    lastModified: new Date().toISOString(),
+  };
+
+  await storage.saveCharacter(updatedCharacter);
+
+  await storage.markCharacterAsDeleted(characterId);
+
+  return {
+    success: true,
+    type: "soft",
+    message: "Character marked as deleted",
+  };
+}
+
+async function deleteCharacterAsDM(characterId, dmToken) {
+  if (!validateDmToken(dmToken)) {
+    return { success: false, error: "Invalid DM token", statusCode: 401 };
+  }
+
+  const character = await storage.getCharacter(characterId);
+  if (!character) {
+    return { success: false, error: "Character not found", status: 404 };
+  }
+
+  await storage.hardDeleteCharacter(characterId);
+
+  return {
+    success: true,
+    type: "hard",
+    message: "Character permanently deleted",
+  };
+}
+
 function deepMerge(target, source) {
   const output = { ...target };
 
@@ -79,4 +135,6 @@ export {
   recoverCharacter,
   getAllCharacters,
   updateCharacter,
+  deleteCharacterAsPlayer,
+  deleteCharacterAsDM,
 };
