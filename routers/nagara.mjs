@@ -23,7 +23,6 @@ async function nagaraRout(req, res, url) {
 
   if (isFrontendRequest) {
     try {
-      console.log("frontend request");
       let filePath = pathname.substring("/nagara/c".length);
       if (filePath === "" || filePath === "/") filePath = "/index.html";
 
@@ -43,7 +42,6 @@ async function nagaraRout(req, res, url) {
       res.writeHead(200);
       res.end(content);
     } catch (error) {
-      console.log("this error", error);
       try {
         const indexPath = path.join(FRONTEND_DIR, "index.html");
         const content = await fs.readFile(indexPath);
