@@ -1,7 +1,7 @@
 function createDefaultCharacter(
   playerId,
   characterName,
-  playerName = "Unknown"
+  playerName = "Unknown",
 ) {
   return {
     id: "", // by storage
@@ -107,6 +107,8 @@ function validateCharacterData(data) {
       }
     }
   }
+
+  console.log("VALIDATION RESULTS:", errors);
 
   if (errors.length > 0) {
     throw new Error(errors.join(", "));

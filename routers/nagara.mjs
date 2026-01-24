@@ -5,10 +5,12 @@ import { requireDmToken } from "../libraries/nagara/auth.mjs";
 import * as nagara from "../libraries/nagara/index.mjs";
 import * as backup from "../libraries/nagara/backup.mjs";
 
-import { renderDashboardView } from "../libraries/nagara/handlers/renderDashboardView.mjs";
+// @TODO add barrel
 import { handleGetCharacters } from "../libraries/nagara/handlers/handleGetCharacters.mjs";
+import { renderDashboardView } from "../libraries/nagara/handlers/renderDashboardView.mjs";
 import { renderInitialView } from "../libraries/nagara/handlers/renderInitialView.mjs";
 import { renderCreationView } from "../libraries/nagara/handlers/renderCreationView.mjs";
+import { renderCharacterView } from "../libraries/nagara/handlers/renderCharacterView.mjs";
 import { generateHumanReadableId } from "../libraries/nagara/utils.mjs";
 
 const FRONTEND_DIR = path.join(PUBLIC_PATH, "public", "nagara", "c");
@@ -87,27 +89,6 @@ async function nagaraRout(req, res, url) {
         !pathParts[1]
       ) {
         return await handleGetCharacters(req, res, url);
-        // const playerId = url.searchParams.get("playerId");
-
-        // if (!playerId) {
-        //   const dmToken = req.headers["x-dm-token"];
-        //   if (dmToken === process.env.DM_TOKEN) {
-        //     const allChars = await nagara.getAllCharacters();
-        //     res.writeHead(200);
-        //     res.end(JSON.stringify(allChars));
-        //   } else {
-        //     res.writeHead(400);
-        //     res.end(
-        //       JSON.stringify({ error: "Player ID or DM token required" }),
-        //     );
-        //   }
-        // } else {
-        //   // GET /api/v1/nagara/characters -- Get characters for player
-        //   const characters = await nagara.getPlayerCharacters(playerId);
-        //   res.writeHead(200);
-        //   res.end(JSON.stringify(characters));
-        // }
-        // return true;
       }
 
       if (
@@ -116,11 +97,8 @@ async function nagaraRout(req, res, url) {
         pathParts[0] === "view" &&
         pathParts[1] === "dashboard"
       ) {
-        //@TODO: move inside
-        const playerId = req.headers["x-player-id"];
-
-        //@TODO: what if no playerID
-        return await renderDashboardView(req, res, playerId);
+        // @TODO: refactor into handler
+        return await renderDashboardView(req, res);
       }
 
       if (
@@ -139,6 +117,16 @@ async function nagaraRout(req, res, url) {
         pathParts[1] === "creation"
       ) {
         return await renderCreationView(req, res);
+      }
+
+      if (
+        // GET /api/v1/nagara/view/character/:id
+        req.method === "GET" &&
+        pathParts[0] === "view" &&
+        pathParts[1] === "character" &&
+        pathParts[2]
+      ) {
+        return await renderCharacterView(req, res, pathParts[2]);
       }
 
       if (
