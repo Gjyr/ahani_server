@@ -5,12 +5,13 @@ import { requireDmToken } from "../libraries/nagara/auth.mjs";
 import * as nagara from "../libraries/nagara/index.mjs";
 import * as backup from "../libraries/nagara/backup.mjs";
 
-// @TODO add barrel
 import { handleGetCharacters } from "../libraries/nagara/handlers/handleGetCharacters.mjs";
-import { renderDashboardView } from "../libraries/nagara/handlers/renderDashboardView.mjs";
-import { renderInitialView } from "../libraries/nagara/handlers/renderInitialView.mjs";
-import { renderCreationView } from "../libraries/nagara/handlers/renderCreationView.mjs";
-import { renderCharacterView } from "../libraries/nagara/handlers/renderCharacterView.mjs";
+import {
+  renderDashboardView,
+  renderInitialView,
+  renderCreationView,
+  renderCharacterView,
+} from "../libraries/nagara/renderers/index.mjs";
 import { generateHumanReadableId } from "../libraries/nagara/utils.mjs";
 
 const FRONTEND_DIR = path.join(PUBLIC_PATH, "public", "nagara", "c");
