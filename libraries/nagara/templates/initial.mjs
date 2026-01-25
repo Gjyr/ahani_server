@@ -13,15 +13,12 @@ const TEXTS = {
         label: "World of Warcraft",
         term: "EU &sol; Argent Dawn",
         url: "https://worldofwarcraft.blizzard.com/en-gb/character/eu/argent-dawn/genetta/",
-        css: ["hintable", "interactable"],
         tooltip:
           "Find&nbsp;him&nbsp;on&nbsp;the&nbsp;official&nbsp;armory&nbsp;website",
         content: "Genetta",
       },
       discord: {
         label: "Discord",
-        url: "https://worldofwarcraft.blizzard.com/en-gb/character/eu/argent-dawn/genetta/",
-        css: ["hintable", "interactable", "copyable"],
         tooltip:
           "Click&nbsp;to&nbsp;copy&nbsp;that&nbsp;name&nbsp;to&nbsp;the&nbsp;clipboard",
         content: "black.feather",
@@ -29,7 +26,6 @@ const TEXTS = {
       pinterest: {
         label: "Pinterest",
         url: "https://www.pinterest.com/outofhisdepth/aesthetics/",
-        css: ["hintable", "interactable"],
         tooltip: "Have&nbsp;a&nbsp;look&nbsp;at&nbsp;his&nbsp;board",
         content: "&sol;outofhisdepth",
       },
@@ -50,6 +46,12 @@ const TEXTS = {
       label: "Invoke modal window to help recover own characters",
     },
   },
+};
+
+const BEHAVIOR_MAP = {
+  discord: ["clipboardEnabled", "hintEnabled"],
+  pinterest: ["hintEnabled", "linkEnabled"],
+  wow: ["hintEnabled", "linkEnabled"],
 };
 
 export function renderInitial() {
@@ -80,11 +82,11 @@ function renderContactsBlock() {
   return `
     <aside>
       <dl>
-        ${renderContactsRow("wow", true, true)}
+        ${renderContactsRow("wow")}
 
-        ${renderContactsRow("discord", false, false, 'data-clipboard="black.feather"')}
+        ${renderContactsRow("discord", 'data-clipboard-text="black.feather"')}
 
-        ${renderContactsRow("pinterest", true, true)}
+        ${renderContactsRow("pinterest")}
       </dl>
     </aside>
   `;
@@ -100,29 +102,26 @@ function renderMenuBlock() {
   `;
 }
 
-function renderContactsRow(
-  contactName,
-  secondTerm = false,
-  isLink = false,
-  customAttribute = "",
-) {
+function renderContactsRow(contactName, customAttribute = "") {
+  const contact = TEXTS.welcome.contacts[contactName];
+
+  const behaviorKeys = [...BEHAVIOR_MAP[contactName]].join(" ");
+
   return `
     <div id="contacts__${contactName}">
-      <svg role="img" aria-label="${TEXTS.welcome.contacts[contactName].label} icon">
+      <svg role="img" aria-label="${contact.label} icon">
         <use href="/assets/icons/hero/icon-${contactName}.svg"></use>
       </svg>
 
-      <dt>${TEXTS.welcome.contacts[contactName].label}</dt>
-      ${secondTerm ? `<dt>${TEXTS.welcome.contacts[contactName].term}</dt>` : ""}
+      <dt>${escapeHtml(contact.label)}</dt>
+      ${contact.term ? `<dt>${escapeHtml(contact.term)}</dt>` : ""}
       <dd>
         <a
-          ${isLink ? `href="${TEXTS.welcome.contacts[contactName].url}"` : ""}
-          ${isLink ? `rel="author"` : ""}
-          ${isLink ? `target="_blank"` : ""}
-          class="${TEXTS.welcome.contacts[contactName].css.join(" ")}"
-          data-tooltip="${TEXTS.welcome.contacts[contactName].tooltip}"
+          data-behavior="${behaviorKeys}"
+          ${contact.url ? `href="${escapeHtml(contact.url)}"` : ""}
+          data-tooltip-text="${escapeHtml(contact.tooltip)}"
           ${customAttribute}
-          >${TEXTS.welcome.contacts[contactName].content}</a
+          >${escapeHtml(contact.content)}</a
         >
       </dd>
     </div>
@@ -166,11 +165,12 @@ function addDialogContent() {
 
 //@TODO: add trusted types support on the client
 function escapeHtml(unsafe) {
+  return unsafe;
   return unsafe.replace(
     /[&<>"']/g,
     (m) =>
       ({
-        "&": "&amp;",
+        // "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
