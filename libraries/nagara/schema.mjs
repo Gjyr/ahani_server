@@ -12,6 +12,10 @@ function createDefaultCharacter(
     created: new Date().toISOString(),
     lastModified: new Date().toISOString(),
 
+    portrait: {
+      path: "",
+    },
+
     experience: { total: 0, unspent: 0 },
     corruption: { permanent: 0, temporary: 0 },
 
@@ -58,6 +62,8 @@ function createDefaultCharacter(
     },
 
     assets: [],
+
+    location: "",
 
     background: {
       race: "",

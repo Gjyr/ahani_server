@@ -1,38 +1,165 @@
+const TEXTS = {
+  dashboard: {
+    article: {
+      title: "NAGARA",
+      description:
+        "All your characters are here. Click on any one or Create new.",
+    },
+    stats: {
+      attributes: {
+        health: {
+          term: "HP",
+          statPath: "attributes.secondary.toughness.current",
+        },
+        corruption: {
+          term: "CP",
+          statPath: "corruption.permanent",
+        },
+        money: {
+          term: "Reales",
+          statPath: "equipment.money",
+        },
+        experience: {
+          term: "EXP",
+          statPath: "experience.unspent",
+        },
+        location: {
+          term: "Loc",
+          statPath: "location",
+        },
+      },
+    },
+    menu: {
+      edit: {
+        label: "EDIT",
+        isPrimary: true,
+      },
+      view: {
+        label: "VIEW",
+      },
+    },
+  },
+};
+
 export function renderDashboard(characters) {
+  const dashboardCharacters = characters.map((char) => ({
+    name: char.characterName,
+    id: char.id,
+    portrait: char.portrait.path,
+    health: char.attributes?.secondary?.toughness?.current || 0,
+    corruption:
+      (char.corruption?.permanent || 0) + (char.corruption?.temporary || 0),
+    money: char.equipment?.money,
+    experience: char.experience?.unspent,
+    location: char.location,
+  }));
+
   return `
-    <section class="dashboard">
-    <h2>Your Characters</h2>
-      ${renderCharacterList(characters)}
-      ${renderCreateButton()}
-    </section>
+    ${renderWelcomeBlock()}
+
+    ${renderDashboardBlock(dashboardCharacters)}
 
     ${addScriptElement(characters)}
   `;
 }
 
-function renderCharacterList(characters) {
-  if (characters.length === 0) {
-    return '<p class="empty-state">No characters yet. Create your first!</p>';
-  }
-  
+function renderWelcomeBlock() {
   return `
-    <ul class="characters">
-      ${characters.map(character => `
-        <li class="character-card" data-character-id="${character.id}">
-          <h3>${escapeHtml(character.characterName)}</h3>
-          <span class="level">Level ${calculateLevel(character)}</span>
-        </li>
-      `).join('')}
+    <article>
+      <h1>${TEXTS.dashboard.article.title}</h1>
+
+      <p>
+        ${escapeHtml(TEXTS.dashboard.article.description).replace("Create", "<em>Create</em>")}
+      </p>
+    </article>
+  `;
+}
+
+function renderDashboardBlock(characters) {
+  return `
+    <ul role="grid" aria-label="Character list">
+      ${characters.map((character) => `${renderCharacterCard(character)}`).join(" ")}
     </ul>
   `;
 }
 
-function calculateLevel(character) {
-  return "";
+function renderCharacterCard(character) {
+  return `
+    <li role="gridcell">
+      ${renderCharacterCardPortrait(character)}
+
+      ${renderCharacterCardStats(character)}
+
+      ${renderCharacterCardMenu(character.id)}
+    </li>
+  `;
 }
 
-function renderCreateButton() {
-  return `<button class="create-btn">Create New</button>`;
+function renderCharacterCardPortrait(character) {
+  return `
+    <picture>
+    <!--
+      <img
+        src="${escapeHtml(character.portrait || "/default-avatar.jpg")}"
+        alt="Portrait of ${escapeHtml(character.name)}"
+        loading="lazy"
+        height="200"
+        width="120"
+    -->
+    </picture>
+  `;
+}
+
+function renderCharacterCardStats(character) {
+  return `
+    <div role="group">
+      <h3 role="presentation">${escapeHtml(character.name)}</h3>
+      <dl>
+        ${renderAttribute(character, "health")}
+
+        ${renderAttribute(character, "corruption")}
+
+        ${renderAttribute(character, "money")}
+
+        ${renderAttribute(character, "experience")}
+
+        ${renderAttribute(character, "location")}
+      </dl>
+    </div>
+  `;
+}
+
+function renderAttribute(character, attr) {
+  const attributeName = TEXTS.dashboard.stats.attributes[attr];
+
+  return `
+    <div data-attribute="${attr}">
+      <dt>${attributeName.term}</dt>
+      <dd>${character[attr]}</dd>
+    </div>
+  `;
+}
+
+function renderCharacterCardMenu(characterId) {
+  return `
+    <menu>
+      ${renderButton("view", characterId)}
+
+      ${renderButton("edit", characterId)}
+    </menu>
+  `;
+}
+
+function renderButton(action, characterId) {
+  return `
+    <button
+      data-action="${action}"
+      ${TEXTS.dashboard.menu[action].isPrimary ? 'class="primary"' : ""}
+      data-character-id="${escapeHtml(characterId)}"
+    >
+      <span>${TEXTS.dashboard.menu[action].label}</span>
+    </button>
+  `;
 }
 
 function addScriptElement(characters) {
@@ -44,8 +171,15 @@ function addScriptElement(characters) {
 }
 
 function escapeHtml(unsafe) {
-  return unsafe.replace(/[&<>"']/g, m => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;',
-    '"': '&quot;', "'": '&#039;'
-  }[m]));
+  return unsafe.replace(
+    /[&<>"']/g,
+    (m) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      })[m],
+  );
 }

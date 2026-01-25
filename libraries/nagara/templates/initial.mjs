@@ -1,12 +1,11 @@
 const TEXTS = {
   welcome: {
-    title: "Character Builder",
-    subtitle: "Welcome to our RPG system",
     article: {
       title: "NAGARA",
-      welcomeText: "This here is a character builder for Nagara RPG. Welcome!",
+      welcomeText:
+        "This here is a <em>character builder</em> for Nagara RPG. Welcome!",
       description:
-        "If this isn&rsquo;t your first visit, yet you still see this page instead of your characters, try Recover button. Or contact me personally, that should work too.",
+        "If this isn&rsquo;t your first visit, yet you still see this page instead of your characters, try <em>Recover</em> button. Or contact me personally, that should work too.",
     },
     contacts: {
       wow: {
