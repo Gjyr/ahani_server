@@ -2,10 +2,8 @@ import * as nagara from "../index.mjs";
 
 export async function handleGetCharacters(req, res, url) {
   const playerId = url.searchParams.get("playerId");
-  console.log("from get characters: ", playerId);
 
   if (!playerId) {
-    console.trace("no player id");
     // @TODO: disable dm handing
     const dmToken = req.headers["x-dm-token"];
     if (dmToken === process.env.DM_TOKEN) {
