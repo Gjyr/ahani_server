@@ -6,6 +6,7 @@ import * as nagara from "../libraries/nagara/index.mjs";
 import * as backup from "../libraries/nagara/backup.mjs";
 
 import { handleGetCharacters } from "../libraries/nagara/handlers/handleGetCharacters.mjs";
+import { handleGetAbilities } from "../libraries/nagara/handlers/handleGetAbilities.mjs";
 import {
   renderDashboardView,
   renderInitialView,
@@ -90,6 +91,10 @@ async function nagaraRout(req, res, url) {
         !pathParts[1]
       ) {
         return await handleGetCharacters(req, res, url);
+      }
+
+      if (req.method === "GET" && pathParts[0] === "abilities") {
+        return await handleGetAbilities(req, res);
       }
 
       if (
