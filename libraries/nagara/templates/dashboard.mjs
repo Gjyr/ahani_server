@@ -38,6 +38,18 @@ const TEXTS = {
         label: "VIEW",
       },
     },
+    createCard: {
+      button: {
+        type: "button",
+        action: "create",
+        label: "Create new character",
+      },
+      icon: {
+        name: "icon-plus-1",
+        label: "Icon with a plus sign",
+        tooltip: "Create new character!",
+      },
+    },
   },
 };
 
@@ -79,6 +91,7 @@ function renderDashboardBlock(characters) {
   return `
     <ul role="grid" aria-label="Character list">
       ${characters.map((character) => `${renderCharacterCard(character)}`).join(" ")}
+      ${characters.length < 6 && renderCreateChaarcterCard()} 
     </ul>
   `;
 }
@@ -159,6 +172,34 @@ function renderButton(action, characterId) {
     >
       <span>${TEXTS.dashboard.menu[action].label}</span>
     </button>
+  `;
+}
+
+function renderCreateChaarcterCard() {
+  return `
+    <li id="dashboard-create" role="gridcell">
+      ${renderDashboardCharacterCreateButton()}
+    </li>
+  `;
+}
+
+function renderDashboardCharacterCreateButton() {
+  return `
+    <button
+      type="${TEXTS.dashboard.createCard.button.type}"
+      data-action="${TEXTS.dashboard.createCard.button.action}"
+      aria-label="${TEXTS.dashboard.createCard.button.label}"
+    >
+      ${renderDashboardCreateIcon()}
+    </button>
+  `;
+}
+
+function renderDashboardCreateIcon() {
+  return `
+    <svg role="img" aria-label="${TEXTS.dashboard.createCard.icon.label}">
+      <use href="/public/nagara/c/common/icons/${TEXTS.dashboard.createCard.icon.name}.svg"></use>
+    </svg>
   `;
 }
 
