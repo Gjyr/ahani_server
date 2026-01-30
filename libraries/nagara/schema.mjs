@@ -40,6 +40,7 @@ function createDefaultCharacter(
 
     // abilities, powers, boons, sins
     traits: [],
+    tradition: "",
 
     equipment: {
       money: 0,
@@ -69,6 +70,7 @@ function createDefaultCharacter(
       race: "",
       shadow: "",
       age: 0,
+      profession: "",
       portrait: "",
       kinkList: [],
       journal: {
