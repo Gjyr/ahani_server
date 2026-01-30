@@ -91,7 +91,7 @@ function renderDashboardBlock(characters) {
   return `
     <ul role="grid" aria-label="Character list">
       ${characters.map((character) => `${renderCharacterCard(character)}`).join(" ")}
-      ${characters.length < 6 && renderCreateChaarcterCard()} 
+      ${characters.length < 6 && renderCreateCharacterCard()} 
     </ul>
   `;
 }
@@ -175,7 +175,7 @@ function renderButton(action, characterId) {
   `;
 }
 
-function renderCreateChaarcterCard() {
+function renderCreateCharacterCard() {
   return `
     <li id="dashboard-create" role="gridcell">
       ${renderDashboardCharacterCreateButton()}
@@ -197,7 +197,7 @@ function renderDashboardCharacterCreateButton() {
 
 function renderDashboardCreateIcon() {
   return `
-    <svg role="img" aria-label="${TEXTS.dashboard.createCard.icon.label}">
+    <svg role="presentation" aria-label="${TEXTS.dashboard.createCard.icon.label}">
       <use href="/public/nagara/c/common/icons/${TEXTS.dashboard.createCard.icon.name}.svg"></use>
     </svg>
   `;
