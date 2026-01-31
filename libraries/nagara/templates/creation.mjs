@@ -603,6 +603,7 @@ function renderOutput(section) {
       name="${TEXTS.creation.form[section].output.name}"
       aria-live="polite"
       role="status"
+      id="${TEXTS.creation.form[section].output.name}"
       for="${TEXTS.creation.form[section].output.for}"
       >${TEXTS.creation.form[section].output.content}</output
     >
