@@ -61,15 +61,15 @@ const TEXTS = {
           title: "Secondary",
           attrs: {
             toughness: {
-              path: "attributes.secondary.toughness",
+              path: "attributes.secondary.toughness.max",
               placeholder: "10",
             },
             pain: {
-              path: "attributes.secondary.pain",
+              path: "attributes.secondary.painThreshold",
               placeholder: "10",
             },
             corruption: {
-              path: "attributes.secondary.corruption",
+              path: "attributes.secondary.corruptionThreshold",
               placeholder: "10",
             },
             defense: {
@@ -163,6 +163,8 @@ export function renderCreation() {
     ${renderNavigationBlock()}
 
     ${renderCreationForm()}
+
+    ${renderSubmitButton()}
   `;
 }
 
@@ -681,8 +683,8 @@ function formatHTMLLabel(string) {
   });
 }
 
-// function renderSubmitButton() {
-//   return `
-//         <button class="submit-btn" form="creation" type="submit">${TEXTS.creation.submit.title}</button>
-//     `;
-// }
+function renderSubmitButton() {
+  return `
+    <button style="display: none;" form="creation-form" type="submit"></button>
+  `;
+}

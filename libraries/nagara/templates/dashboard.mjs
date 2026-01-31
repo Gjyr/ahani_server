@@ -212,6 +212,7 @@ function addScriptElement(characters) {
 }
 
 function escapeHtml(unsafe) {
+  return unsafe;
   return unsafe.replace(
     /[&<>"']/g,
     (m) =>
