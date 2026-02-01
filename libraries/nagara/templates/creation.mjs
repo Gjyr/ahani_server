@@ -88,7 +88,7 @@ const TEXTS = {
       portrait: {
         title: "Portrait",
         label: "Icon with a plus sign",
-        path: "portrait.path",
+        path: "portrait.file",
       },
       abilities: {
         title: "Abilities",
