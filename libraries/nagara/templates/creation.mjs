@@ -361,7 +361,7 @@ function renderPortraitBlock() {
           <use href="/public/nagara/c/common/icons/icon-plus-2.svg"></use>
         </svg>
 
-        <input type="file" id="portrait-input" name="${TEXTS.creation.form.portrait.path}" />
+        <input type="file" id="portrait-input" name="${TEXTS.creation.form.portrait.path}" accept="image/png, image/jpeg, image/jpg, image/webp, image/gif, image/avif" />
       </label>
     </section>
   `;
