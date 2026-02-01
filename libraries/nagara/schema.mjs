@@ -14,10 +14,9 @@ function createDefaultCharacter(
 
     portrait: {
       path: "",
-      data: "",
       crop: {
-        x: 0.5,
-        y: 0.5,
+        x: 0.0,
+        y: 0.0,
         scale: 1.0,
         rotation: 0,
       },

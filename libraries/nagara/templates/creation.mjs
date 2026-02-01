@@ -354,11 +354,9 @@ function renderVacantSinItem(_, index) {
 function renderPortraitBlock() {
   return `
     <section id="portrait">
-      <div id="portrait-drop-zone"
-        role="region"
+      <div role="region"
         aria-label="Portrait upload area"
-        tabindex="1"
-      >
+        tabindex="1">
 
         <div id="portrait-placeholder">
           <span>${TEXTS.creation.form.portrait.title}</span>
@@ -368,13 +366,7 @@ function renderPortraitBlock() {
         </div>
 
         <div id="portrait-preview" hidden>
-          <img id="portrait-image"
-               alt="Character portrait"
-               style="transform: translate(50%, 50%) scale(1);"
-          />
-        <div id="portrait-controls" hidden>
-          <button type="button" data-action="crop">CROP</button>
-          <button type="button" data-action="remove">REMOVE</button>
+          <img alt="Character portrait" />
         </div>
       </div>
 
@@ -387,6 +379,11 @@ function renderPortraitBlock() {
     </section>
   `;
 }
+
+// <div hidden>
+//   <button type="button" data-action="crop">CROP</button>
+//   <button type="button" data-action="remove">REMOVE</button>
+// </div>
 
 function renderAbilitiesBlock(abilities) {
   return `
