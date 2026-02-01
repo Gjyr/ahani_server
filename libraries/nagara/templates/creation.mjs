@@ -354,15 +354,36 @@ function renderVacantSinItem(_, index) {
 function renderPortraitBlock() {
   return `
     <section id="portrait">
-      <label for="portrait-input" id="portrait-drop-zone">
-        <span>${TEXTS.creation.form.portrait.title}</span>
+      <div id="portrait-drop-zone"
+        role="region"
+        aria-label="Portrait upload area"
+        tabindex="1"
+      >
 
-        <svg role="img" aria-label="${TEXTS.creation.form.portrait.label}">
-          <use href="/public/nagara/c/common/icons/icon-plus-2.svg"></use>
-        </svg>
+        <div id="portrait-placeholder">
+          <span>${TEXTS.creation.form.portrait.title}</span>
+          <svg role="img" aria-label="${TEXTS.creation.form.portrait.label}">
+            <use href="/public/nagara/c/common/icons/icon-plus-2.svg"></use>
+          </svg>
+        </div>
 
-        <input type="file" id="portrait-input" name="${TEXTS.creation.form.portrait.path}" accept="image/png, image/jpeg, image/jpg, image/webp, image/gif, image/avif" />
-      </label>
+        <div id="portrait-preview" hidden>
+          <img id="portrait-image"
+               alt="Character portrait"
+               style="transform: translate(50%, 50%) scale(1);"
+          />
+        <div id="portrait-controls" hidden>
+          <button type="button" data-action="crop">CROP</button>
+          <button type="button" data-action="remove">REMOVE</button>
+        </div>
+      </div>
+
+      <input type="file"
+        id="portrait-input"
+        name="${TEXTS.creation.form.portrait.path}"
+        accept="image/png, image/jpeg, image/jpg, image/webp, image/gif, image/avif"
+        aria-label="Upload portrait image"
+      />
     </section>
   `;
 }
