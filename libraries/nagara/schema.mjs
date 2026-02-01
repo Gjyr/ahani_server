@@ -14,6 +14,17 @@ function createDefaultCharacter(
 
     portrait: {
       path: "",
+      data: "",
+      crop: {
+        x: 0.5,
+        y: 0.5,
+        scale: 1.0,
+        rotation: 0,
+      },
+      dimensions: {
+        width: 0,
+        height: 0,
+      },
     },
 
     experience: { total: 0, unspent: 0 },
