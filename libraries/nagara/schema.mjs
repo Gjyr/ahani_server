@@ -24,6 +24,7 @@ function createDefaultCharacter(
         width: 0,
         height: 0,
       },
+      status: "",
     },
 
     experience: { total: 0, unspent: 0 },

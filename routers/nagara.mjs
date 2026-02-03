@@ -7,6 +7,7 @@ import * as backup from "../libraries/nagara/backup.mjs";
 
 import { handleGetCharacters } from "../libraries/nagara/handlers/handleGetCharacters.mjs";
 import { handleGetAbilities } from "../libraries/nagara/handlers/handleGetAbilities.mjs";
+import { handlePortraitUpload } from "../libraries/nagara/handlers/handlePortraitUpload.mjs";
 import {
   renderDashboardView,
   renderInitialView,
@@ -95,6 +96,17 @@ async function nagaraRout(req, res, url) {
 
       if (req.method === "GET" && pathParts[0] === "abilities") {
         return await handleGetAbilities(req, res);
+      }
+
+      if (
+        // POST /api/v1/nagara/characters/:chaarcterId/portrait
+        req.method === "POST" &&
+        pathParts[0] === "characters" &&
+        pathParts[1] &&
+        pathParts[2] === "portrait"
+      ) {
+        const characterId = pathParts[1];
+        return await handlePortraitUpload(req, res, characterId);
       }
 
       if (
