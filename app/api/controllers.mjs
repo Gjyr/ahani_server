@@ -1,11 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { MIME_TYPES, PUBLIC_PATH } from "#config";
 import { logEvent, getEvents } from "#logger";
 import { processMessagePost } from "#robot";
-import { generateNonce } from "#utilities";
 import { serveSiteImages } from "../handlers/siteImages.mjs";
+import { servePortraitImages } from "../handlers/portraitImages.mjs";
 
 function isChrome(headers) {
   const agentString = headers["sec-ch-ua"] || null;
@@ -89,6 +88,10 @@ async function handleServeImages(imagePath, res) {
   await serveSiteImages(imagePath, res);
 }
 
+async function handlePortraits(imagePath, res) {
+  await servePortraitImages(imagePath, res);
+}
+
 // TODO: move to routs
 async function loggerRout(req, res, url) {
   if (req.method === "POST") await logEvent(req, res);
@@ -111,4 +114,10 @@ async function aiRout(req, res) {
   }
 }
 
-export { serveSiteFiles, handleServeImages, loggerRout, aiRout };
+export {
+  serveSiteFiles,
+  handleServeImages,
+  handlePortraits,
+  loggerRout,
+  aiRout,
+};

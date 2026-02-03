@@ -2,6 +2,7 @@ import { URL } from "node:url";
 import {
   serveSiteFiles,
   handleServeImages,
+  handlePortraits,
   loggerRout,
   aiRout,
 } from "#controllers";
@@ -13,6 +14,8 @@ export default async function app(req, res) {
 
   if (url.pathname.startsWith(`${API_ROUTE}/hold/i`))
     await handleServeImages(url.searchParams.get("img"), res);
+  if (url.pathname.startsWith("/uploads/portraits"))
+    await handlePortraits(url.pathname, res);
   else if (url.pathname.startsWith(`${API_ROUTE}/log`))
     await loggerRout(req, res, url);
   else if (url.pathname.startsWith(`${API_ROUTE}/robot`))

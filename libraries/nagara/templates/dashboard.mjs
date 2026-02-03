@@ -1,3 +1,5 @@
+import { scaleCropForContainer } from "../utils/general.mjs";
+
 const TEXTS = {
   dashboard: {
     article: {
@@ -57,7 +59,7 @@ export function renderDashboard(characters) {
   const dashboardCharacters = characters.map((char) => ({
     name: char.characterName,
     id: char.id,
-    portrait: char.portrait.path,
+    portrait: char.portrait,
     health: char.attributes?.secondary?.toughness?.current || 0,
     corruption:
       (char.corruption?.permanent || 0) + (char.corruption?.temporary || 0),
@@ -109,16 +111,42 @@ function renderCharacterCard(character) {
 }
 
 function renderCharacterCardPortrait(character) {
+  const hasPortrait =
+    character.portrait?.path && character.portrait?.status === "uploaded";
+
+  if (!hasPortrait) {
+    return `
+      <picture">
+        <img src="/public/default-avatar.jpg"
+             alt="Default portrait"
+             loading="lazy"
+             height="200"
+             width="120" />
+      </picture>
+    `;
+  }
+
+  const creationSize = { width: 300, height: 450 };
+  const cardSize = { width: 120, height: 200 };
+
+  const originalCrop = character.portrait.crop;
+
+  const { x, y, scale } = scaleCropForContainer(
+    originalCrop,
+    creationSize,
+    cardSize,
+  );
+
+  const transform = `translate(-50%, -50%) translate(${x + 20}px, ${y}px) scale(${scale})`;
+
   return `
     <picture>
-    <!--
       <img
-        src="${escapeHtml(character.portrait || "/default-avatar.jpg")}"
+        src="${escapeHtml(character.portrait.path)}"
         alt="Portrait of ${escapeHtml(character.name)}"
+        style="transform: ${transform};"
         loading="lazy"
-        height="200"
-        width="120"
-    -->
+       />
     </picture>
   `;
 }
