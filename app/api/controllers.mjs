@@ -1,9 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { MIME_TYPES, PUBLIC_PATH } from "#config";
 import { logEvent, getEvents } from "#logger";
 import { processMessagePost } from "#robot";
 import { generateNonce } from "#utilities";
+import { serveSiteImages } from "../handlers/siteImages.mjs";
 
 function isChrome(headers) {
   const agentString = headers["sec-ch-ua"] || null;
@@ -22,7 +24,7 @@ async function isFound(filePath) {
   const pathTraversal = !filePath.startsWith(PUBLIC_PATH);
   const exists = await fs.promises.access(filePath).then(
     () => true,
-    () => false
+    () => false,
   );
 
   return !pathTraversal && exists;
@@ -83,17 +85,8 @@ async function serveSiteFiles(req, res) {
 }
 
 // TODO: hold route
-async function serveImages(imagePath, res) {
-  // TODO: separators
-  fs.readFile(
-    `${PUBLIC_PATH}\\assets\\images\\trp\\${imagePath}main.webp`,
-    (err, content) => {
-      res.writeHead(200, {
-        "Content-Type": "image/webp",
-      });
-      res.end(content);
-    }
-  );
+async function handleServeImages(imagePath, res) {
+  await serveSiteImages(imagePath, res);
 }
 
 // TODO: move to routs
@@ -118,4 +111,4 @@ async function aiRout(req, res) {
   }
 }
 
-export { serveSiteFiles, serveImages, loggerRout, aiRout };
+export { serveSiteFiles, handleServeImages, loggerRout, aiRout };

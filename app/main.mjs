@@ -1,5 +1,10 @@
 import { URL } from "node:url";
-import { serveSiteFiles, serveImages, loggerRout, aiRout } from "#controllers";
+import {
+  serveSiteFiles,
+  handleServeImages,
+  loggerRout,
+  aiRout,
+} from "#controllers";
 import { LOCAL_ADDRESS, API_ROUTE } from "#config";
 import nagaraRout from "../routers/nagara.mjs";
 
@@ -7,7 +12,7 @@ export default async function app(req, res) {
   const url = new URL(req.url, `http://${LOCAL_ADDRESS}/`);
 
   if (url.pathname.startsWith(`${API_ROUTE}/hold/i`))
-    await serveImages(url.searchParams.get("img"), res);
+    await handleServeImages(url.searchParams.get("img"), res);
   else if (url.pathname.startsWith(`${API_ROUTE}/log`))
     await loggerRout(req, res, url);
   else if (url.pathname.startsWith(`${API_ROUTE}/robot`))
