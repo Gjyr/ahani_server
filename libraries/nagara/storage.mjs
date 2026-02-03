@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ENCODING, SERVER_PATH } from "#config";
 import { deepEqual } from "node:assert";
+import { deletePortrait } from "./fileUploader.mjs";
 
 const BASE_DIR = path.join(SERVER_PATH, "libraries", "nagara");
 const LIVE_DATA_DIR = path.join(BASE_DIR, "data", "characters");
@@ -150,10 +151,20 @@ async function markCharacterAsDeleted(characterId) {
 
 async function hardDeleteCharacter(characterId) {
   try {
+    const charInfo = characterIndex.byId[characterId];
+
+    try {
+      await deletePortrait(characterId);
+    } catch (portraitError) {
+      console.warn(
+        `Portrait deletionfailed for ${characterId}:`,
+        portraitError.message,
+      );
+    }
+
     const filename = path.join(LIVE_DATA_DIR, `${characterId}.json`);
     await fs.unlink(filename);
 
-    const charInfo = characterIndex.byId[characterId];
     if (charInfo) {
       delete characterIndex.byId[characterId];
 
