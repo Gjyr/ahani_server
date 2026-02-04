@@ -671,7 +671,7 @@ function renderInput(
         type="${type}"
         form="creation-form"
         placeholder="${textsLocation[attr.toLowerCase()].placeholder}"
-        ${flags?.map(([htmlAttribute, value]) => `${htmlAttribute}="${value}"`).join(" ")}
+        ${(flags || []).map(([htmlAttribute, value]) => `${htmlAttribute}="${value}"`).join(" ")}
         ${isAutoFocused ? "autofocus" : ""}
         ${isRequired ? "required" : ""}
         ${isReadonly ? "readonly" : ""}
