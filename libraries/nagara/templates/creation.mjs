@@ -94,7 +94,7 @@ const TEXTS = {
         title: "Abilities",
         output: {
           content: 50,
-          name: "experience",
+          name: "experience.unspent",
           for: "",
         },
         add: {
@@ -690,6 +690,6 @@ function formatHTMLLabel(string) {
 
 function renderSubmitButton() {
   return `
-    <button style="display: none;" form="creation-form" type="submit"></button>
+    <button style="display: none;" form="creation-form" formnovalidate type="submit"></button>
   `;
 }
