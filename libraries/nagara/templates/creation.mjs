@@ -680,20 +680,6 @@ function renderInput(
   `;
 }
 
-// function renderInputText(
-//   label,
-//   placeholder,
-//   group,
-//   isRequired = false,
-//   disabled = false,
-//   value = placeholder,
-// ) {
-//   return `
-//         <label for="${formatHTMLLabel(label)}">${label}</label>
-//         <input id="${formatHTMLLabel(label)}" name="${group}${formatHTMLLabel(label)}" ${isRequired ? "required" : ""} placeholder="${placeholder}" value="${value}" ${disabled ? "readonly" : ""} />
-//     `;
-// }
-
 function formatHTMLLabel(string) {
   const str = string.toLowerCase();
 

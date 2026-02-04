@@ -35,7 +35,7 @@ function createDefaultCharacter(
         accurate: 5,
         cunning: 5,
         discreet: 5,
-        allure: 5,
+        alluring: 5,
         quick: 5,
         resolute: 5,
         vigilant: 5,
