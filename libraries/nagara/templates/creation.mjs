@@ -221,6 +221,7 @@ function renderCreationForm() {
           maxlength="16"
           required
           aria-label="Character name"
+          tabindex="1"
         />
       </div>
     </form>
@@ -378,11 +379,6 @@ function renderPortraitBlock() {
     </section>
   `;
 }
-
-// <div hidden>
-//   <button type="button" data-action="crop">CROP</button>
-//   <button type="button" data-action="remove">REMOVE</button>
-// </div>
 
 function renderAbilitiesBlock(abilities) {
   return `
