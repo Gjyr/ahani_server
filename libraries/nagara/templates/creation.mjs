@@ -221,6 +221,8 @@ function renderCreationForm() {
           maxlength="16"
           required
           aria-label="Character name"
+          data-behavior="select-enabled"
+          pattern="[\\w\\s\\-']"
           tabindex="1"
         />
       </div>
@@ -633,6 +635,7 @@ function renderTextarea(attr, textsLocation, content = attr) {
         name="${textsLocation[attr.toLowerCase()].path}"
         placeholder="${textsLocation[attr.toLowerCase()].placeholder}"
         tabindex="1"
+        data-behavior="select-enabled"
       ></textarea>
     </div>
   `;
@@ -651,10 +654,19 @@ function renderInput(
   if (!Object.is(flags, null) || !!flags?.length)
     switch (type) {
       case "number":
-        flags.push(["min", "5"], ["max", "15"], ["inputmode", "numeric"]);
+        flags.push(
+          ["min", "5"],
+          ["max", "15"],
+          ["inputmode", "numeric"],
+          ["data-behavior", "select-enabled"],
+        );
         break;
       case "text":
-        flags.push(["inputmode", "text"]);
+        flags.push(
+          ["inputmode", "text"],
+          ["data-behavior", "select-enabled"],
+          ["pattern", "[\\w\\s\\-']"],
+        );
         break;
     }
 
