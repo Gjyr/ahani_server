@@ -356,7 +356,7 @@ function renderPortraitBlock() {
     <section id="portrait">
       <div role="region"
         aria-label="Portrait upload area"
-        tabindex="1">
+        tabindex="-1">
 
         <div id="portrait-placeholder">
           <span>${TEXTS.creation.form.portrait.title}</span>
@@ -372,7 +372,6 @@ function renderPortraitBlock() {
 
       <input type="file"
         id="portrait-input"
-        name="${TEXTS.creation.form.portrait.path}"
         accept="image/png, image/jpeg, image/jpg, image/webp, image/gif, image/avif"
         aria-label="Upload portrait image"
       />
@@ -637,6 +636,7 @@ function renderTextarea(attr, textsLocation, content = attr) {
         id="${attr.toLowerCase()}"
         name="${textsLocation[attr.toLowerCase()].path}"
         placeholder="${textsLocation[attr.toLowerCase()].placeholder}"
+        tabindex="1"
       ></textarea>
     </div>
   `;
@@ -675,6 +675,7 @@ function renderInput(
         ${isAutoFocused ? "autofocus" : ""}
         ${isRequired ? "required" : ""}
         ${isReadonly ? "readonly" : ""}
+        tabindex="${isReadonly ? "-1" : "1"}"
       />
     </div>
   `;
