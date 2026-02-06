@@ -1,3 +1,5 @@
+import { SERVER_CONTROLLED_FIELDS } from "./schema/validation.mjs";
+
 function generateId() {
   return (
     crypto.randomUUID?.() ||
@@ -31,9 +33,34 @@ function generateHumanReadableId() {
   return `${prefix}-${numbers}`;
 }
 
+function filterServerControlledFields(data) {
+  const filtered = { ...data };
+
+  for (const fieldPath of SERVER_CONTROLLED_FIELDS) {
+    const keys = fieldPath.split(".");
+    let current = filtered;
+
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (current[keys[i]]) {
+        current = current[keys[i]];
+      } else {
+        current = null;
+        break;
+      }
+    }
+
+    if (current && current[keys[keys.length - 1]] !== undefined) {
+      delete current[keys[keys.length - 1]];
+    }
+  }
+
+  return filtered;
+}
+
 export {
   generateId,
   generateBackupCode,
   validateCharacter,
   generateHumanReadableId,
+  filterServerControlledFields,
 };

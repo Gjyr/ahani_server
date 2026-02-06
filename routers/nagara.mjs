@@ -10,6 +10,7 @@ import {
   handleGetAbilities,
   handleUploadPortrait,
   handleUpdateCharacter,
+  handleCreateCharacter,
 } from "../libraries/nagara/handlers/index.mjs";
 import {
   renderDashboardView,
@@ -227,33 +228,8 @@ async function nagaraRout(req, res, url) {
 
       if (req.method === "POST" && pathParts[0] === "characters") {
         // POST /api/v1/nagara/characters -- Create new character
-        //@TODO: its own module
 
-        let body = "";
-        req.on("data", (chunk) => (body += chunk));
-
-        req.on("end", async () => {
-          try {
-            const data = JSON.parse(body);
-            let playerId = data.playerId || req.headers["x-player-id"];
-
-            if (!playerId) {
-              // res.writeHead(400);
-              // res.end(JSON.stringify({ error: "Player ID required" }));
-              // return;
-
-              playerId = generateHumanReadableId();
-            }
-
-            const character = await nagara.createCharacter(playerId, data);
-            res.writeHead(201);
-            res.end(JSON.stringify(character));
-          } catch (error) {
-            res.writeHead(400);
-            res.end(JSON.stringify({ error: error.message }));
-          }
-        });
-        return true;
+        return await handleCreateCharacter(req, res);
       }
 
       if (req.method === "POST" && pathParts[0] === "recover") {

@@ -1,25 +1,22 @@
 import { generateId, generateBackupCode } from "./utils.mjs";
-import { createDefaultCharacter, validateCharacterData } from "./schema.mjs";
+import { generateDefaultCharacter } from "./schema/utils.mjs";
+import { validateCharacterCreation } from "./schema/validation.mjs";
 import * as storage from "./storage.mjs";
-import { error } from "node:console";
-import { stat } from "node:fs";
 import { validateDmToken } from "./auth.mjs";
 
 async function createCharacter(playerId, characterData) {
-  validateCharacterData(characterData);
+  // validateCharacterCreation(characterData);
 
-  const defaultCharacter = createDefaultCharacter(
-    playerId,
-    characterData.characterName,
-    characterData.player || "Unknown",
-  );
+  // const defaultCharacter = generateDefaultCharacter(
+  //   playerId,
+  //   characterData.characterName,
+  //   characterData.player || "Unknown",
+  // );
 
   const character = {
-    ...defaultCharacter,
     ...characterData,
     id: generateId(),
     backupCode: generateBackupCode(),
-    playerId,
   };
 
   return await storage.saveCharacter(character);
