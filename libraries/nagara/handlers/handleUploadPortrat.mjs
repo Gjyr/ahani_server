@@ -3,7 +3,7 @@ import * as nagara from "../index.mjs";
 import { parseImage } from "../utils/multipart.mjs";
 // import * as nagara from "../libraries/nagara/index.mjs";
 
-export async function handlePortraitUpload(req, res, characterId) {
+export async function handleUploadPortrait(req, res, characterId) {
   try {
     const character = await nagara.getCharacter(characterId);
     if (!character) {

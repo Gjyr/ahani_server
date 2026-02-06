@@ -5,9 +5,12 @@ import { requireDmToken } from "../libraries/nagara/auth.mjs";
 import * as nagara from "../libraries/nagara/index.mjs";
 import * as backup from "../libraries/nagara/backup.mjs";
 
-import { handleGetCharacters } from "../libraries/nagara/handlers/handleGetCharacters.mjs";
-import { handleGetAbilities } from "../libraries/nagara/handlers/handleGetAbilities.mjs";
-import { handlePortraitUpload } from "../libraries/nagara/handlers/handlePortraitUpload.mjs";
+import {
+  handleGetCharacters,
+  handleGetAbilities,
+  handleUploadPortrait,
+  handleUpdateCharacter,
+} from "../libraries/nagara/handlers/index.mjs";
 import {
   renderDashboardView,
   renderInitialView,
@@ -95,6 +98,7 @@ async function nagaraRout(req, res, url) {
       }
 
       if (req.method === "GET" && pathParts[0] === "abilities") {
+        // GET /api/v1/nagara/abilities
         return await handleGetAbilities(req, res);
       }
 
@@ -106,7 +110,7 @@ async function nagaraRout(req, res, url) {
         pathParts[2] === "portrait"
       ) {
         const characterId = pathParts[1];
-        return await handlePortraitUpload(req, res, characterId);
+        return await handleUploadPortrait(req, res, characterId);
       }
 
       if (
@@ -162,6 +166,10 @@ async function nagaraRout(req, res, url) {
           res.end(JSON.stringify({ error: "Character not found" }));
         }
         return true;
+      }
+
+      if (req.method === "PATCH" && pathParts[0]) {
+        return await handleUpdateCharacter();
       }
 
       if (
