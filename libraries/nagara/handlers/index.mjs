@@ -1,4 +1,4 @@
 export { handleGetAbilities } from "./handleGetAbilities.mjs";
 export { handleGetCharacters } from "./handleGetCharacters.mjs";
-export { handleUploadPortrait } from "./handleUploadPortrat.mjs";
+export { handleUploadPortrait } from "./handleUploadPortrait.mjs";
 export { handleUpdateCharacter } from "./handleUpdateCharacter.mjs";
