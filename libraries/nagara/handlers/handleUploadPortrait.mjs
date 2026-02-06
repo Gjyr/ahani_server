@@ -1,7 +1,6 @@
 import { uploadPortrait } from "../fileUploader.mjs";
 import * as nagara from "../index.mjs";
 import { parseImage } from "../utils/multipart.mjs";
-// import * as nagara from "../libraries/nagara/index.mjs";
 
 export async function handleUploadPortrait(req, res, characterId) {
   try {

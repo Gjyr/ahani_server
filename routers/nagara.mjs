@@ -168,8 +168,12 @@ async function nagaraRout(req, res, url) {
         return true;
       }
 
-      if (req.method === "PATCH" && pathParts[0]) {
-        return await handleUpdateCharacter();
+      if (
+        req.method === "PATCH" &&
+        pathParts[0] === "character" &&
+        pathParts[1]
+      ) {
+        return await handleUpdateCharacter(req, res, pathParts[1]);
       }
 
       if (
