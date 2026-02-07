@@ -3,3 +3,4 @@ export { handleGetCharacters } from "./handleGetCharacters.mjs";
 export { handleUploadPortrait } from "./handleUploadPortrait.mjs";
 export { handleUpdateCharacter } from "./handleUpdateCharacter.mjs";
 export { handleCreateCharacter } from "./handleCreateCharacter.mjs";
+export { handleValidateDM } from "./handleValidateDM.mjs";

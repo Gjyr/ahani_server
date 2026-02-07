@@ -11,6 +11,7 @@ import {
   handleUploadPortrait,
   handleUpdateCharacter,
   handleCreateCharacter,
+  handleValidateDM,
 } from "../libraries/nagara/handlers/index.mjs";
 import {
   renderDashboardView,
@@ -308,6 +309,14 @@ async function nagaraRout(req, res, url) {
           }
         });
         return true;
+      }
+
+      if (
+        req.method === "GET" &&
+        pathParts[0] === "dm" &&
+        pathParts[1] === "validate"
+      ) {
+        return await handleValidateDM(req, res);
       }
 
       // GET /api/v1/nagara/backups/characters[/:id] -- list backups
