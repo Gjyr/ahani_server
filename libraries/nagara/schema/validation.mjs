@@ -34,7 +34,7 @@ export function validateCharacterCreation(data, playerId, playerName) {
     skipUndefined: true,
   });
 
-  checkRequiredFields(data, errors, REQUIRED_FIELDS);
+  checkRequiredFields(data, errors, REQUIRED_FIELDS, SERVER_CONTROLLED_FIELDS);
 
   const userProvidedPaths = getAllFieldPaths(data);
 
@@ -57,7 +57,10 @@ export function validateCharacterCreation(data, playerId, playerName) {
       continue;
     }
 
-    if (!canAccessField(fieldPath, "owner", "write")) {
+    const canSet = skipOnCreation(fieldPath, "owner");
+
+    // if (!canAccessField(fieldPath, "owner", "write")) {
+    if (!canSet) {
       errors.push({
         field: fieldPath,
         error: `You don't have permission to set "${fieldPath}" during character creation...`,
@@ -153,4 +156,36 @@ export async function validateCharacterUpdate(updates, character, user) {
   }
 
   return { validUpdates, errors };
+}
+
+export function skipOnCreation(fieldPath, userRole) {
+  const schema = getFieldSchema(fieldPath);
+
+  if (schema.serverControlled) return false;
+
+  if (userRole === "owner") {
+    const creationOverrides = [
+      "experience.total",
+      "experience.unspent",
+      "corruption.temporary",
+      "attributes.primary.accurate",
+      "attributes.primary.cunning",
+      "attributes.primary.discreet",
+      "attributes.primary.alluring",
+      "attributes.primary.quick",
+      "attributes.primary.strong",
+      "attributes.primary.vigilant",
+      "attributes.primary.resolute",
+      "attributes.secondary.toughness.max",
+      "attributes.secondary.painThreshold",
+      "attributes.secondary.corruptionThreshold",
+      "attributes.secondary.defense",
+    ];
+
+    if (creationOverrides.includes(fieldPath)) {
+      return true;
+    }
+  }
+
+  return canAccessField(fieldPath, userRole, "write");
 }

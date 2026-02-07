@@ -235,7 +235,7 @@ function renderAttributesBlock() {
     <section id="attributes">
       <h3>${TEXTS.creation.form.attributes.title}</h3>
 
-      ${renderOutput("attributes")}
+      ${renderOutput("attributes", true)}
 
       ${renderPrimaryAttributesBlock()}
 
@@ -611,13 +611,14 @@ function renderInformationSocialBlock() {
   `;
 }
 
-function renderOutput(section) {
+function renderOutput(section, isUI = false) {
   return `
     <output
       form="creation-form"
       name="${TEXTS.creation.form[section].output.name}"
       aria-live="polite"
       role="status"
+      ${isUI ? 'data-ui-only="true"' : ""}
       id="${TEXTS.creation.form[section].output.name}"
       for="${TEXTS.creation.form[section].output.for}"
       >${TEXTS.creation.form[section].output.content}</output

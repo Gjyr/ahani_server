@@ -115,15 +115,56 @@ export function getFieldSchema(fieldPath) {
   return schema;
 }
 
-export function checkRequiredFields(data, errors, requiredPaths) {
+export function _getFieldSchema(fieldPath, schema = CHARACTER_SCHEMA) {
+  const parts = fieldPath.split(".");
+  let current = schema;
+
+  for (const part of parts) {
+    if (current.type) return current;
+
+    if (current[part]) {
+      current = current[part];
+    } else {
+      for (const key in (current = {})) {
+        if (current[key] && current[key].type === "object") {
+          const nested = getFieldSchema(part, current[key]);
+
+          if (nested) {
+            current = nested;
+            break;
+          }
+        }
+      }
+
+      if (current === schema) {
+        return null;
+      }
+    }
+  }
+
+  const { primary, secondary, ...rest } = current;
+  return rest.type ? rest : null;
+}
+
+export function checkRequiredFields(
+  data,
+  errors,
+  requiredPaths,
+  serverControlledFields,
+) {
   for (const fieldPath of requiredPaths) {
+    if (serverControlledFields.includes(fieldPath)) {
+      continue;
+    }
+
     const value = getNestedValue(data, fieldPath);
     // const schema = getFieldSchema(fieldPath);
 
     const isEmpty =
       value === undefined ||
       value === null ||
-      (typeof value === "string" && value.trim() === "");
+      (typeof value === "string" && value.trim() === "") ||
+      (Array.isArray(value) && value.length === 0);
 
     if (isEmpty) {
       errors.push({

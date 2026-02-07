@@ -39,7 +39,7 @@ export const CHARACTER_SCHEMA = {
     type: "string",
     serverControlled: true,
     generated: true,
-    permissions: { owner: false, dm: true, public: false },
+    permissions: { owner: true, dm: true, public: false },
   },
 
   created: {
@@ -78,7 +78,7 @@ export const CHARACTER_SCHEMA = {
     type: "string",
     required: true,
     immutable: true,
-    permissions: { owner: false, dm: true, public: false },
+    permissions: { owner: true, dm: true, public: false },
   },
 
   attributes: {
@@ -94,7 +94,7 @@ export const CHARACTER_SCHEMA = {
       permissions: { owner: true, dm: true, public: false },
 
       accurate: createAttributeField("accurate"),
-      strong: createAttributeField("strong"),
+      cunning: createAttributeField("cunning"),
       discreet: createAttributeField("discreet"),
       alluring: createAttributeField("alluring"),
       quick: createAttributeField("quick"),
@@ -118,7 +118,7 @@ export const CHARACTER_SCHEMA = {
           integer: true,
           required: true,
           default: 10,
-          permissions: { owner: false, dm: true, public: false },
+          permissions: { owner: true, dm: true, public: false },
           error: "Max toughness can't be lower than 10",
         },
 
@@ -138,7 +138,7 @@ export const CHARACTER_SCHEMA = {
         type: "number",
         required: true,
         validate: rpgValidators.defenseValid,
-        permissions: { owner: false, dm: true, public: false },
+        permissions: { owner: true, dm: true, public: false },
         error: "Defense value is incorrect for this character",
       },
 
@@ -146,7 +146,7 @@ export const CHARACTER_SCHEMA = {
         type: "number",
         required: true,
         validate: rpgValidators.painThresholdValid,
-        permissions: { owner: false, dm: true, public: false },
+        permissions: { owner: true, dm: true, public: false },
         error: "Pain threshold is incorrect for this character",
       },
 
@@ -154,7 +154,7 @@ export const CHARACTER_SCHEMA = {
         type: "number",
         required: true,
         validate: rpgValidators.corruptionThresholdValid,
-        permissions: { owner: false, dm: true, public: false },
+        permissions: { owner: true, dm: true, public: false },
         error: "Corruption threshold is incorrect for this character",
       },
     },
@@ -162,14 +162,14 @@ export const CHARACTER_SCHEMA = {
 
   experience: {
     type: "object",
-    permissions: { owner: false, dm: true, public: false },
+    permissions: { owner: true, dm: true, public: false },
 
     total: {
       type: "number",
       min: 50,
       integer: true,
       required: true,
-      permissions: { owner: false, dm: true, public: false },
+      permissions: { owner: true, dm: true, public: false },
       error: "Experience cannot be negative",
       ui: { label: "Total XP", help: "Total experience earned " },
     },
@@ -187,14 +187,14 @@ export const CHARACTER_SCHEMA = {
 
   corruption: {
     type: "object",
-    permissions: { owner: false, dm: true, public: false },
+    permissions: { owner: true, dm: true, public: false },
 
     permanent: {
       type: "number",
       min: 0,
       integer: true,
       required: true,
-      permissions: { owner: false, dm: true, public: false },
+      permissions: { owner: true, dm: true, public: false },
       error: "Permanent corruption can't be negative",
     },
 
@@ -221,7 +221,7 @@ export const CHARACTER_SCHEMA = {
 
   tradition: {
     type: "string",
-    permissions: { owner: false, dm: true, public: false },
+    permissions: { owner: true, dm: true, public: false },
     error: "Mystical tradition needs to be a string",
   },
 
@@ -276,7 +276,7 @@ export const CHARACTER_SCHEMA = {
 
       done: {
         type: "array",
-        permissions: { owner: false, dm: true, public: false },
+        permissions: { owner: true, dm: true, public: false },
       },
 
       rumours: {
