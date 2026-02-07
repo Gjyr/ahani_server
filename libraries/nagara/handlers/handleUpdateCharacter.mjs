@@ -2,7 +2,7 @@ import { getCharacter, saveCharacter } from "../storage.mjs";
 
 export async function handleUpdateCharacter(req, res, characterId) {
   const playerId = req.header["x-player-id"];
-  const isDM = req.headers["x-dm-token"] === process.env.DM_TOKEN;
+  const isDM = req.headers["x-dm-id"] === process.env.DM_TOKEN;
 
   if (!playerId && !isDM) {
     res.writeHead(403);

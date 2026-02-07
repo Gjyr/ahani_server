@@ -5,7 +5,7 @@ export async function handleGetCharacters(req, res, url) {
 
   if (!playerId) {
     // @TODO: disable dm handing
-    const dmToken = req.headers["x-dm-token"];
+    const dmToken = req.headers["x-dm-id"];
     if (dmToken === process.env.DM_TOKEN) {
       const allChars = await nagara.getAllCharacters();
       res.writeHead(200);
