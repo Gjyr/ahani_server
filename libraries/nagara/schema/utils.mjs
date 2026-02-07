@@ -17,10 +17,12 @@ export function validateFieldValue(fieldPath, value, allData = {}) {
   if (!schema) return { valid: false, error: `Unknown field: ${fieldPath}` };
 
   if (schema.type && typeof value !== schema.type) {
-    return {
-      valid: false,
-      error: `Expected ${schema.type}, got ${typeof value}`,
-    };
+    if (!(schema.type === "array" && Array.isArray(value))) {
+      return {
+        valid: false,
+        error: `Expected ${schema.type}, got ${typeof value}`,
+      };
+    }
   }
 
   if (schema.type === "number") {
@@ -72,10 +74,10 @@ export function generateDefaultCharacter(playerId, playerName = "Unknown") {
       const fullPath = path ? `${path}.${key}` : key;
 
       if (SERVER_CONTROLLED_FIELDS.includes(fullPath)) {
-        console.warn(
-          "DEBUG: server controlled path was skipped during default character generation",
-          fullPath,
-        );
+        // console.warn(
+        //   "DEBUG: server controlled path was skipped during default character generation",
+        //   fullPath,
+        // );
         console;
       }
 
