@@ -6,6 +6,7 @@ import * as nagara from "../libraries/nagara/index.mjs";
 import * as backup from "../libraries/nagara/backup.mjs";
 
 import {
+  handleGetCharacter,
   handleGetCharacters,
   handleGetAbilities,
   handleUploadPortrait,
@@ -14,14 +15,21 @@ import {
   handleValidateDM,
 } from "../libraries/nagara/handlers/index.mjs";
 import {
+  createMiddlewareChain,
+  withCharacterPermissions,
+} from "../libraries/nagara/middleware/middleware.mjs";
+import {
   renderDashboardView,
   renderInitialView,
   renderCreationView,
   renderCharacterView,
 } from "../libraries/nagara/renderers/index.mjs";
+import { createCharacterRoute } from "../libraries/nagara/routes/characterRoutes.mjs";
 import { generateHumanReadableId } from "../libraries/nagara/utils.mjs";
 
 const FRONTEND_DIR = path.join(PUBLIC_PATH, "public", "nagara", "c");
+
+const getCharacterHandler = createCharacterRoute();
 
 async function nagaraRout(req, res, url) {
   const { pathname } = url;
@@ -159,15 +167,7 @@ async function nagaraRout(req, res, url) {
         pathParts[0] === "characters" &&
         pathParts[1]
       ) {
-        const character = await nagara.getCharacter(pathParts[1]);
-        if (character) {
-          res.writeHead(200);
-          res.end(JSON.stringify(character));
-        } else {
-          res.writeHead(404);
-          res.end(JSON.stringify({ error: "Character not found" }));
-        }
-        return true;
+        return await getCharacterHandler(req, res, pathParts);
       }
 
       if (
