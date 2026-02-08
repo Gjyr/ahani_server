@@ -1,16 +1,16 @@
+import { handleGetCharacterView } from "../handlers/handleGetCharacterView.mjs";
+import { withCharacterPermissions } from "../middleware/characterPermissions.mjs";
 import { createMiddlewareChain } from "../middleware/middleware.mjs";
-import { withCharacterPermissions } from "../middleware/middleware.mjs";
-import { handleGetCharacter } from "../handlers/handleGetCharacter.mjs";
 
-export function createCharacterRoute() {
-  const getCharacterApiChain = createMiddlewareChain(
+export function createViewRoute() {
+  const getViewChain = createMiddlewareChain(
     withCharacterPermissions,
-    handleGetCharacter,
+    handleGetCharacterView,
   );
 
   return async (req, res, pathParts) => {
     try {
-      const handled = await getCharacterApiChain(req, res, pathParts);
+      const handled = await getViewChain(req, res, pathParts);
 
       if (!res.headersSent) {
         res.writeHead(404);
@@ -19,7 +19,7 @@ export function createCharacterRoute() {
 
       return true;
     } catch (error) {
-      console.error("Character route error:", error);
+      console.error("View route error:", error);
 
       if (!res.headersSent) {
         res.writeHead(500);

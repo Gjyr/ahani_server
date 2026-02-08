@@ -48,5 +48,9 @@ export function extractCharacterId(req) {
 }
 
 export function extractCharacterIdFromPath(pathParts) {
-  return pathParts[1];
+  const index = pathParts.findIndex((pathPart) =>
+    pathPart.startsWith("character"),
+  );
+
+  return pathParts[index + 1];
 }

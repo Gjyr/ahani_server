@@ -6,30 +6,28 @@ import * as nagara from "../libraries/nagara/index.mjs";
 import * as backup from "../libraries/nagara/backup.mjs";
 
 import {
-  handleGetCharacter,
-  handleGetCharacters,
+  handleValidateDM,
   handleGetAbilities,
+  handleGetCharacters,
   handleUploadPortrait,
   handleUpdateCharacter,
   handleCreateCharacter,
-  handleValidateDM,
 } from "../libraries/nagara/handlers/index.mjs";
 import {
-  createMiddlewareChain,
-  withCharacterPermissions,
-} from "../libraries/nagara/middleware/middleware.mjs";
-import {
-  renderDashboardView,
   renderInitialView,
   renderCreationView,
+  renderDashboardView,
   renderCharacterView,
 } from "../libraries/nagara/renderers/index.mjs";
-import { createCharacterRoute } from "../libraries/nagara/routes/characterRoutes.mjs";
-import { generateHumanReadableId } from "../libraries/nagara/utils.mjs";
+import {
+  createViewRoute,
+  createCharacterRoute,
+} from "../libraries/nagara/routes/index.mjs";
 
 const FRONTEND_DIR = path.join(PUBLIC_PATH, "public", "nagara", "c");
 
 const getCharacterHandler = createCharacterRoute();
+const getViewHandler = createViewRoute();
 
 async function nagaraRout(req, res, url) {
   const { pathname } = url;
@@ -158,7 +156,7 @@ async function nagaraRout(req, res, url) {
         pathParts[1] === "character" &&
         pathParts[2]
       ) {
-        return await renderCharacterView(req, res, pathParts[2]);
+        return await getViewHandler(req, res, pathParts);
       }
 
       if (

@@ -1,10 +1,10 @@
-import { sanitizeForRole } from "../schema/sanitization.mjs";
+import { sanitizeCharacterForRole } from "../schema/sanitization.mjs";
 
 export async function handleGetCharacter(req, res) {
   const character = req.character;
 
   if (character) {
-    const sanitizedCharacter = sanitizeForRole(
+    const sanitizedCharacter = sanitizeCharacterForRole(
       character,
       req.characterPermissions.role,
     );
