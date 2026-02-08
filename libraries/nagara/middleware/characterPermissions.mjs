@@ -2,34 +2,44 @@ import { getCharacter } from "../storage.mjs";
 import { validateDmToken } from "../auth.mjs";
 import { extractCharacterIdFromPath } from "./middleware.mjs";
 
-export async function withCharacterPermissions(req, res, path, next) {
-  const characterId = extractCharacterIdFromPath(path);
+export async function withCharacterPermissions(req, res, pathParts, next) {
+  try {
+    const characterId = extractCharacterIdFromPath(pathParts);
+    const character = await getCharacter(characterId);
 
-  const character = await getCharacter(characterId);
+    if (!character) {
+      res.writeHead(404);
+      res.end(JSON.stringify({ error: "Character not found" }));
+      return;
+    }
 
-  if (!character) {
-    res.writeHead(404);
-    res.end(JSON.stringify({ error: "Character not found" }));
-    return;
+    const dmToken = req.headers["x-dm-id"];
+    const isDM = dmToken && validateDmToken(dmToken);
+
+    if (character.deleted && !isDM) {
+      res.writeHead(404);
+      res.end(JSON.stringify({ error: "Character not found" }));
+      return;
+    }
+
+    const playerId = req.headers["x-player-id"];
+    const isOwner = character.playerId === playerId;
+
+    req.characterPermissions = {
+      role: isDM ? "dm" : isOwner ? "owner" : "public",
+    };
+
+    req.character = character;
+
+    if (!res.headersSent) {
+      await next();
+    }
+  } catch (error) {
+    console.error("Permission middleware error:", error);
+
+    if (!res.headerSent) {
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: "Internal server error" }));
+    }
   }
-
-  const dmToken = req.headers["x-dm-id"];
-  const isDM = dmToken && validateDmToken(dmToken);
-
-  if (character.deleted && !isDM) {
-    res.writeHead(404);
-    res.end(JSON.stringify({ error: "Character not found" }));
-    return;
-  }
-
-  const playerId = req.headers["x-player-id"];
-  const isOwner = character.playerId === playerId;
-
-  req.characterPermissions = {
-    role: isDM ? "dm" : isOwner ? "owner" : "public",
-  };
-
-  req.character = character;
-
-  next();
 }

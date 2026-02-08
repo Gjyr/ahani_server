@@ -172,9 +172,10 @@ async function nagaraRout(req, res, url) {
 
       if (
         req.method === "PATCH" &&
-        pathParts[0] === "character" &&
+        pathParts[0] === "characters" &&
         pathParts[1]
       ) {
+        // PATCH /api/v1/nagara/characters/:id
         return await handleUpdateCharacter(req, res, pathParts[1]);
       }
 
