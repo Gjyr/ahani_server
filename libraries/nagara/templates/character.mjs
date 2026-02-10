@@ -222,7 +222,7 @@ function renderCreationForm(ctx) {
           required
           aria-label="Character name"
           data-behavior="select-enabled"
-          pattern="[\\w\\s\\-']"
+          pattern="[\\w\\s\\-']+"
           value="${ctx.character?.characterName}"
           tabindex="1"
         />
@@ -248,26 +248,33 @@ function renderAttributesBlock(ctx) {
 function renderPrimaryAttributesBlock(ctx) {
   const LOCATION = TEXTS.character.form.attributes.primary.attrs;
 
+  const flags = [
+    ["min", "5"],
+    ["max", "15"],
+    ["inputmode", "numeric"],
+    ["data-behavior", "select-enabled"],
+  ];
+
   return `
     <div id="primary">
       <h4>${TEXTS.character.form.attributes.primary.title}</h4>
 
       <div>
-        ${renderInput("Accurate", "number", LOCATION, {}, ctx)}
+        ${renderInput("Accurate", "number", LOCATION, { isRequired: true, flags }, ctx)}
 
-        ${renderInput("Cunning", "number", LOCATION, {}, ctx)}
+        ${renderInput("Cunning", "number", LOCATION, { isRequired: true, flags }, ctx)}
 
-        ${renderInput("Discreet", "number", LOCATION, {}, ctx)}
+        ${renderInput("Discreet", "number", LOCATION, { isRequired: true, flags }, ctx)}
 
-        ${renderInput("Alluring", "number", LOCATION, {}, ctx)}
+        ${renderInput("Alluring", "number", LOCATION, { isRequired: true, flags }, ctx)}
 
-        ${renderInput("Quick", "number", LOCATION, {}, ctx)}
+        ${renderInput("Quick", "number", LOCATION, { isRequired: true, flags }, ctx)}
 
-        ${renderInput("Resolute", "number", LOCATION, {}, ctx)}
+        ${renderInput("Resolute", "number", LOCATION, { isRequired: true, flags }, ctx)}
 
-        ${renderInput("Vigilant", "number", LOCATION, {}, ctx)}
+        ${renderInput("Vigilant", "number", LOCATION, { isRequired: true, flags }, ctx)}
 
-        ${renderInput("Strong", "number", LOCATION, {}, ctx)}
+        ${renderInput("Strong", "number", LOCATION, { isRequired: true, flags }, ctx)}
       </div>
     </div>
   `;
@@ -286,13 +293,27 @@ function renderSecondaryAttributesBlock(ctx) {
       <h4>${TEXTS.character.form.attributes.secondary.title}</h4>
 
       <div>
-        ${renderInput("Toughness", "number", LOCATION, {}, ctx)}
+        ${renderInput(
+          "Toughness",
+          "number",
+          LOCATION,
+          {
+            isReadonly: true,
+            isRequired: true,
+            flags: [
+              ["min", "10"],
+              ["inputmode", "numeric"],
+              ["value", "10"],
+            ],
+          },
+          ctx,
+        )}
 
-        ${renderInput("Pain", "number", LOCATION, {}, ctx)}
+        ${renderInput("Pain", "number", LOCATION, { isRequired: true, isReadonly: true, flags: [["inputmode", "numeric"]] }, ctx)}
 
-        ${renderInput("Corruption", "number", LOCATION, {}, ctx)}
+        ${renderInput("Corruption", "number", LOCATION, { isRequired: true, isReadonly: true, flags: [["inputmode", "numeric"]] }, ctx)}
 
-        ${renderInput("Defense", "number", LOCATION, {}, ctx)}
+        ${renderInput("Defense", "number", LOCATION, { isRequired: true, isReadonly: true, flags: [["inputmode", "numeric"]] }, ctx)}
       </div>
     </div>
   `;
@@ -532,13 +553,61 @@ function renderInformationPersonalBlock(ctx) {
 
   return `
     <div id="personal">
-      ${renderInput("Age", "number", LOCATION, {}, ctx)}
+      ${renderInput(
+        "Age",
+        "number",
+        LOCATION,
+        {
+          flags: [
+            ["min", "0"],
+            ["inputmode", "numeric"],
+            ["data-behavior", "select-enabled"],
+          ],
+        },
+        ctx,
+      )}
 
-      ${renderInput("Race", "text", LOCATION, {}, ctx)}
+      ${renderInput(
+        "Race",
+        "text",
+        LOCATION,
+        {
+          flags: [
+            ["inputmode", "text"],
+            ["data-behavior", "select-enabled"],
+            ["pattern", "[\\w\\s\\-']+"],
+          ],
+        },
+        ctx,
+      )}
 
-      ${renderInput("Reales", "number", LOCATION, {}, ctx)}
+      ${renderInput(
+        "Reales",
+        "number",
+        LOCATION,
+        {
+          flags: [
+            ["min", "0"],
+            ["inputmode", "numeric"],
+            ["data-behavior", "select-enabled"],
+          ],
+        },
+        ctx,
+      )}
 
-      ${renderInput("Profession", "text", LOCATION, {}, ctx)}
+      ${renderInput(
+        "Profession",
+        "text",
+        LOCATION,
+        {
+          flags: [
+            ["inputmode", "text"],
+            ["data-behavior", "select-enabled"],
+            ["pattern", "[\\w\\s\\-']+"],
+          ],
+        },
+        ctx,
+      )}
     </div>
   `;
 }
@@ -648,7 +717,7 @@ function renderOutput(section, isUI = false) {
   `;
 }
 
-function renderTextarea(attr, textsLocation, ctx, content) {
+function renderTextarea(attr, textsLocation, ctx, content = attr) {
   const path = textsLocation[attr.toLowerCase()]?.path;
   const value = ctx.getValue(path, "");
   const placeholder = textsLocation[attr.toLowerCase()]?.placeholder || "";
@@ -666,6 +735,54 @@ function renderTextarea(attr, textsLocation, ctx, content) {
         tabindex="${isFieldReadonly ? "-1" : "1"}"
         data-behavior="select-enabled"
       >${value}</textarea>
+    </div>
+  `;
+}
+
+function _renderInput(
+  attr,
+  type,
+  textsLocation,
+  isRequired = true,
+  isReadonly = false,
+  isAutoFocused = false,
+  flags = [],
+) {
+  // if (flags && flags.length)
+  if (!Object.is(flags, null) || !!flags?.length)
+    switch (type) {
+      case "number":
+        flags.push(
+          ["min", "5"],
+          ["max", "15"],
+          ["inputmode", "numeric"],
+          ["data-behavior", "select-enabled"],
+        );
+        break;
+      case "text":
+        flags.push(
+          ["inputmode", "text"],
+          ["data-behavior", "select-enabled"],
+          ["pattern", "[\\w\\s\\-']"],
+        );
+        break;
+    }
+
+  return `
+    <div class="input">
+      <label for="${attr.toLowerCase()}">${attr}</label>
+      <input
+        id="${attr.toLowerCase()}"
+        name="${textsLocation[attr.toLowerCase()].path}"
+        type="${type}"
+        form="creation-form"
+        placeholder="${textsLocation[attr.toLowerCase()].placeholder}"
+        ${(flags || []).map(([htmlAttribute, value]) => `${htmlAttribute}="${value}"`).join(" ")}
+        ${isAutoFocused ? "autofocus" : ""}
+        ${isRequired ? "required" : ""}
+        ${isReadonly ? "readonly" : ""}
+        tabindex="${isReadonly ? "-1" : "1"}"
+      />
     </div>
   `;
 }
