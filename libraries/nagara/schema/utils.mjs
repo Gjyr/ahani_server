@@ -117,37 +117,6 @@ export function getFieldSchema(fieldPath) {
   return schema;
 }
 
-export function _getFieldSchema(fieldPath, schema = CHARACTER_SCHEMA) {
-  const parts = fieldPath.split(".");
-  let current = schema;
-
-  for (const part of parts) {
-    if (current.type) return current;
-
-    if (current[part]) {
-      current = current[part];
-    } else {
-      for (const key in (current = {})) {
-        if (current[key] && current[key].type === "object") {
-          const nested = getFieldSchema(part, current[key]);
-
-          if (nested) {
-            current = nested;
-            break;
-          }
-        }
-      }
-
-      if (current === schema) {
-        return null;
-      }
-    }
-  }
-
-  const { primary, secondary, ...rest } = current;
-  return rest.type ? rest : null;
-}
-
 export function checkRequiredFields(
   data,
   errors,
@@ -245,4 +214,20 @@ export function validateRPGRules(characterData) {
   }
 
   return errors;
+}
+
+export function isFieldWritable(fieldPath, role, schema = CHARACTER_SCHEMA) {
+  const fieldSchema = getFieldSchema(fieldPath, schema);
+  if (!fieldSchema) return false;
+
+  if (
+    fieldSchema.serverControlled ||
+    fieldSchema.generated ||
+    fieldSchema.immutable ||
+    fieldSchema.derived
+  ) {
+    return false;
+  }
+
+  return canAccessField(fieldPath, role, "write");
 }

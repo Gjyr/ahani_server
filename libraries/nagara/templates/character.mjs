@@ -1,3 +1,5 @@
+import { getWritableFieldPaths } from "../schema/traversal.mjs";
+
 const TEXTS = {
   character: {
     title: "NAGARA",
@@ -100,6 +102,11 @@ const TEXTS = {
         add: {
           label: "Icon with a plus sign",
         },
+        item: {
+          equipmentTitle: "Equipment",
+          statsTitle: "Stats",
+          iconLabel: "Icon displaying novice grade of ability",
+        },
       },
       information: {
         title: "Information",
@@ -164,7 +171,7 @@ export function renderCharacter(character, { role = "public" } = {}) {
 
     ${renderNavigationBlock(ctx)}
 
-    ${renderCreationForm(ctx)}
+    ${renderCharacterForm(ctx)}
   `;
 }
 
@@ -198,16 +205,26 @@ function renderNavigationLink(name) {
   `;
 }
 
-function renderCreationForm(ctx) {
+function renderCharacterForm(ctx) {
+  const mode = ctx.character ? "view" : "creation";
+  const characterId = ctx.character?.id || "";
+
+  const editableAttrs = ctx.getEditableDataAttributes();
+
   return `
-    <form id="creation-form">
+    <form
+      id="character-form"
+      data-mode="${mode}"
+      ${ctx.role !== "public" ? `data-character-id="${characterId}"` : ""}
+      data-role="${ctx.role}"
+        >
       ${renderAttributesBlock(ctx)}
 
       ${renderSinsBlock({ length: 1 })}
 
       ${renderPortraitBlock(ctx)}
 
-      ${renderAbilitiesBlock({ length: 1 })}
+      ${renderAbilitiesBlock(ctx)}
 
       ${renderInformationBlock(ctx)}
 
@@ -223,7 +240,7 @@ function renderCreationForm(ctx) {
           aria-label="Character name"
           data-behavior="select-enabled"
           pattern="[\\w\\s\\-']+"
-          value="${ctx.character?.characterName}"
+          value="${ctx.character?.characterName || "Name"}"
           tabindex="1"
         />
       </div>
@@ -235,8 +252,6 @@ function renderAttributesBlock(ctx) {
   return `
     <section id="attributes">
       <h3>${TEXTS.character.form.attributes.title}</h3>
-
-      ${renderOutput("attributes", true)}
 
       ${renderPrimaryAttributesBlock(ctx)}
 
@@ -425,34 +440,43 @@ function renderPortraitBlock(ctx) {
   `;
 }
 
-function renderAbilitiesBlock(abilities) {
+function renderAbilitiesBlock(ctx) {
+  const abilities =
+    ctx.character?.traits?.filter((t) => t.type === "ability") || [];
+
+  const abilitiesHtml =
+    abilities.length > 0
+      ? abilities
+          .map((ability, index) => renderAbilityItem(ability, index, cts))
+          .join(" ")
+      : renderVacantAbilityItem(0);
+
   return `
     <section id="abilities">
       <h3>${TEXTS.character.form.abilities.title}</h3>
 
-      ${renderOutput("abilities")}
-
       <ul>
-        ${Array.from(abilities, (abilityData, index) => renderVacantAbilityItem(abilityData, index)).join(" ")}
+        ${abilitiesHtml}
       </ul>
     </section>
   `;
 }
 
-function renderAbilityItem() {
-  // placeholder
+function renderAbilityItem(ability, index, ctx) {
+  const isEditable = ctx.isEditable(`traits[${index}]`);
+
   return `
-    <li class="ability" data-ability="0">
-      <h4>Smoke & Mirrors</h4>
+    <li class="ability" data-ability="${index}">
+      <h4>${ability.name}</h4>
 
       <dl>
         <div>
-          <dt>Equipment</dt>
+          <dt>${TEXTS.character.form.abilities.item.equipmentTitle}</dt>
           <dd>2x daggers</dd>
         </div>
 
         <div>
-          <dt>Stats</dt>
+          <dt>${TEXTS.character.form.abilities.item.statsTitle}</dt>
           <dd>Dis</dd>
         </div>
       </dl>
@@ -461,7 +485,7 @@ function renderAbilityItem() {
         <li>
           <svg
             role="img"
-            aria-label="Icon displaying novice grade of ability"
+            aria-label="${TEXTS.character.form.abilities.item.iconLabel}"
           >
             <use
               href="/public/nagara/c/common/icons/icon-grade-novice.svg"
@@ -477,7 +501,7 @@ function renderAbilityItem() {
         <li>
           <svg
             role="img"
-            aria-label="Icon displaying adept grade of ability"
+            aria-label="${TEXTS.character.form.abilities.item.iconLabel}"
           >
             <use
               href="/public/nagara/c/common/icons/icon-grade-adept.svg"
@@ -492,7 +516,7 @@ function renderAbilityItem() {
         <li class="inactive">
           <svg
             role="img"
-            aria-label="Icon displaying master grade of ability"
+            aria-label="${TEXTS.character.form.abilities.item.iconLabel}"
           >
             <use
               href="/public/nagara/c/common/icons/icon-grade-master.svg"
@@ -669,7 +693,7 @@ function renderInformationMysticBlock(ctx) {
           type="text"
           placeholder="Mage Circle"
           inputmode="text"
-          form="creation-form"
+          form="character-form"
           readonly
         />
       </div>
@@ -682,7 +706,7 @@ function renderInformationMysticBlock(ctx) {
           type="number"
           placeholder="0"
           inputmode="numeric"
-          form="creation-form"
+          form="character-form"
           readonly
         />
       </div>
@@ -702,17 +726,36 @@ function renderInformationSocialBlock(ctx) {
   `;
 }
 
-function renderOutput(section, isUI = false) {
+function renderOutput(section, options = {}, ctx) {
+  const { isUI = false } = options;
+  const outputConfig = TEXTS.character.form[section]?.output;
+  if (!outputConfig) return "";
+
+  let value = outputConfig.content;
+  if (ctx.character) {
+    if (section === "attributes") {
+      const primary = ctx.getValue("attributes.primary", {});
+      const total = Object.values(primary).reduce((sum, val) => sum + val, 0);
+      value = 80 - total;
+    } else if (section === "abilities") {
+      const total = ctx.getValue("experience.total", 0);
+      // const spent = calculateSpentExperience?.(ctx.character) || 0;
+      const spent = ctx.getValue("experience.unspent", 0);
+      value = total - spent;
+    }
+  }
+
   return `
     <output
-      form="creation-form"
-      name="${TEXTS.character.form[section].output.name}"
+      form="character-form"
+      name="${outputConfig.name}"
       aria-live="polite"
       role="status"
       ${isUI ? 'data-ui-only="true"' : ""}
-      id="${TEXTS.character.form[section].output.name}"
-      for="${TEXTS.character.form[section].output.for}"
-      >${TEXTS.character.form[section].output.content}</output
+      id="${outputConfig.name}"
+      for="${outputConfig.for}"
+      hidden
+      >${value}</output
     >
   `;
 }
@@ -735,54 +778,6 @@ function renderTextarea(attr, textsLocation, ctx, content = attr) {
         tabindex="${isFieldReadonly ? "-1" : "1"}"
         data-behavior="select-enabled"
       >${value}</textarea>
-    </div>
-  `;
-}
-
-function _renderInput(
-  attr,
-  type,
-  textsLocation,
-  isRequired = true,
-  isReadonly = false,
-  isAutoFocused = false,
-  flags = [],
-) {
-  // if (flags && flags.length)
-  if (!Object.is(flags, null) || !!flags?.length)
-    switch (type) {
-      case "number":
-        flags.push(
-          ["min", "5"],
-          ["max", "15"],
-          ["inputmode", "numeric"],
-          ["data-behavior", "select-enabled"],
-        );
-        break;
-      case "text":
-        flags.push(
-          ["inputmode", "text"],
-          ["data-behavior", "select-enabled"],
-          ["pattern", "[\\w\\s\\-']"],
-        );
-        break;
-    }
-
-  return `
-    <div class="input">
-      <label for="${attr.toLowerCase()}">${attr}</label>
-      <input
-        id="${attr.toLowerCase()}"
-        name="${textsLocation[attr.toLowerCase()].path}"
-        type="${type}"
-        form="creation-form"
-        placeholder="${textsLocation[attr.toLowerCase()].placeholder}"
-        ${(flags || []).map(([htmlAttribute, value]) => `${htmlAttribute}="${value}"`).join(" ")}
-        ${isAutoFocused ? "autofocus" : ""}
-        ${isRequired ? "required" : ""}
-        ${isReadonly ? "readonly" : ""}
-        tabindex="${isReadonly ? "-1" : "1"}"
-      />
     </div>
   `;
 }
@@ -812,6 +807,7 @@ function renderInput(attr, type, textsLocation, options = {}, ctx) {
     isAutoFocused ? "autofocus" : "",
     isRequired && !ctx.character ? "required" : "",
     `tabindex="${tabindex}"`,
+    `disabled`,
     ...flags.map(([key, val]) => `${key}="${val}"`),
   ]
     .filter(Boolean)
@@ -834,6 +830,9 @@ function formatHTMLLabel(string) {
 }
 
 function createTemplateContext(character, role = "public") {
+  const editablePaths = getWritableFieldPaths(role);
+  const editablePrefixes = generatePrefixes(editablePaths);
+
   return {
     character,
     role,
@@ -848,22 +847,51 @@ function createTemplateContext(character, role = "public") {
     },
 
     isEditable(fieldPath) {
-      if (role === "dm") return true;
+      // if (role === "dm") return true;
 
-      if (role === "owner") {
-        const ownerEditable = [
-          "characterName",
-          "attributes.primary",
-          "experience.unspest",
-          "corruption.temporary",
-          "background",
-          "equipment.money",
-        ];
+      // if (role === "owner") {
+      //   const ownerEditable = [
+      //     "characterName",
+      //     "attributes.primary",
+      //     "experience.unspest",
+      //     "corruption.temporary",
+      //     "background",
+      //     "equipment.money",
+      //   ];
 
-        return ownerEditable.some((pattern) => fieldPath.startsWith(pattern));
+      //   return ownerEditable.some((pattern) => fieldPath.startsWith(pattern));
+      // }
+
+      // return false;
+
+      if (editablePaths.has(fieldPath)) return true;
+
+      for (const prefix of editablePrefixes) {
+        if (fieldPath.startsWith(prefix + ".")) return true;
       }
 
       return false;
     },
+
+    getEditableDataAttributes() {
+      return {
+        "data-editable-fields": JSON.stringify(Array.from(editablePaths)),
+        "data-role": role,
+      };
+    },
   };
+}
+
+function generatePrefixes(paths) {
+  const prefixes = new Set();
+
+  for (const path of paths) {
+    const parts = path.split(".");
+
+    for (let i = 1; i < parts.length; i++) {
+      prefixes.add(parts.slice(0, i).join("."));
+    }
+  }
+
+  return prefixes;
 }

@@ -118,6 +118,7 @@ export const CHARACTER_SCHEMA = {
           integer: true,
           required: true,
           default: 10,
+          derived: true,
           permissions: { owner: true, dm: true, public: false },
           error: "Max toughness can't be lower than 10",
         },
@@ -127,6 +128,7 @@ export const CHARACTER_SCHEMA = {
           min: 0,
           integer: true,
           required: true,
+          derived: true,
           validate: rpgValidators.currentHealthValid,
           permissions: { owner: true, dm: true, public: false },
           error: "Current health must be between 0 and maximum health",
@@ -137,6 +139,7 @@ export const CHARACTER_SCHEMA = {
       defense: {
         type: "number",
         required: true,
+        derived: true,
         validate: rpgValidators.defenseValid,
         permissions: { owner: true, dm: true, public: false },
         error: "Defense value is incorrect for this character",
@@ -145,6 +148,7 @@ export const CHARACTER_SCHEMA = {
       painThreshold: {
         type: "number",
         required: true,
+        derived: true,
         validate: rpgValidators.painThresholdValid,
         permissions: { owner: true, dm: true, public: false },
         error: "Pain threshold is incorrect for this character",
@@ -153,6 +157,7 @@ export const CHARACTER_SCHEMA = {
       corruptionThreshold: {
         type: "number",
         required: true,
+        derived: true,
         validate: rpgValidators.corruptionThresholdValid,
         permissions: { owner: true, dm: true, public: false },
         error: "Corruption threshold is incorrect for this character",

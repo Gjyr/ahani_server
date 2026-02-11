@@ -1,4 +1,5 @@
 import { CHARACTER_SCHEMA } from "./character.mjs";
+import { isFieldWritable } from "./utils.mjs";
 
 export function getFieldPathsByProperty(
   propertyName,
@@ -112,4 +113,58 @@ export function deepMerge(target, source, options = {}) {
   });
 
   return output;
+}
+
+export function getWritableFieldPaths(
+  role,
+  schema = CHARACTER_SCHEMA,
+  basePath = "",
+  results = [],
+) {
+  for (const [key, value] of Object.entries(schema)) {
+    if (key.startsWith("_")) continue;
+
+    const currentPath = basePath ? `${basePath}.${key}` : key;
+
+    if (value.type && !["object", "array"].includes(value.type)) {
+      if (isFieldWritable(currentPath, role, schema)) {
+        results.push(currentPath);
+      }
+    } else if (value.type === "object" || value.type === "array") {
+      const nestedKeys = Object.keys(value).filter(
+        (k) =>
+          ![
+            "type",
+            "required",
+            "serverControlled",
+            "generated",
+            "immutable",
+            "permissions",
+            "default",
+            "validate",
+            "error",
+            "ui",
+            "sanitize",
+            "min",
+            "max",
+            "minLength",
+            "maxLength",
+            "pattern",
+            "integer",
+            "derived",
+          ].includes(k),
+      );
+
+      for (const nestedKey of nestedKeys) {
+        getWritableFieldPaths(
+          role,
+          { [nestedKey]: value[nestedKey] },
+          currentPath,
+          results,
+        );
+      }
+    }
+  }
+
+  return new Set(...results);
 }
