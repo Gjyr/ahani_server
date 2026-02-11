@@ -223,6 +223,10 @@ export const CHARACTER_SCHEMA = {
     type: "array",
     permissions: { owner: true, dm: true, public: false },
   },
+  effects: {
+    type: "array",
+    permissions: { owner: true, dm: true, public: false },
+  },
 
   tradition: {
     type: "string",
