@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { ENCODING, SERVER_PATH } from "#config";
 import { deepEqual } from "node:assert";
 import { deletePortrait } from "./fileUploader.mjs";
+import { deepMerge } from "./schema/traversal.mjs";
 
 const BASE_DIR = path.join(SERVER_PATH, "libraries", "nagara");
 const LIVE_DATA_DIR = path.join(BASE_DIR, "data", "characters");
@@ -66,6 +67,26 @@ try {
   await saveIndex();
 }
 
+async function writeCharacterFile(character) {
+  const filename = path.join(LIVE_DATA_DIR, `${character.id}.json`);
+  await fs.writeFile(filename, JSON.stringify(character, null, 2));
+  return character;
+}
+
+async function updateIndexMetadata(character) {
+  characterIndex.byId[character.id] = {
+    name: character.characterName,
+    playerId: character.playerId,
+    backupCode: character.backupCode,
+    created: character.created,
+    deleted: character.deleted || false,
+    deleteAt: character.deleteAt,
+  };
+  // @TODO finish
+
+  await saveIndex();
+}
+
 async function saveIndex() {
   await fs.writeFile(INDEX_FILE, JSON.stringify(characterIndex, null, 2));
 }
@@ -97,6 +118,34 @@ async function saveCharacter(character) {
   await saveIndex();
 
   return character;
+}
+
+async function updateCharacter(id, updates) {
+  const existing = await getCharacter(id);
+  if (!existing) throw new Error("Character not found");
+
+  const updated = deepMerge(existing, updates, { skipUndefined: true });
+  updated.lastModified = new Date().toISOString();
+
+  await writeCharacterFile(updated);
+
+  const metadataFields = [
+    "characterName",
+    "playerId",
+    "backupCode",
+    "deleted",
+    "deletedAt",
+  ];
+  const metadataChanged = metadataFields.some(
+    (field) =>
+      JSON.stringify(existing[field]) !== JSON.stringify(updated[field]),
+  );
+
+  if (metadataChanged) {
+    await updateIndexMetadata(updated);
+  }
+
+  return updated;
 }
 
 async function getCharacter(id) {
@@ -197,6 +246,7 @@ async function hardDeleteCharacter(characterId) {
 export {
   saveCharacter,
   getCharacter,
+  updateCharacter,
   getCharactersByPlayer,
   findCharacterByNameAndCode,
   getAllCharacters,
