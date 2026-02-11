@@ -166,5 +166,5 @@ export function getWritableFieldPaths(
     }
   }
 
-  return new Set(...results);
+  return new Set(results);
 }
