@@ -1,18 +1,34 @@
 export const SECONDARY_FORMULAS = {
   toughness: {
-    base: (char) => char.attributes.primary.strong || 0,
+    default: "strong",
+    base: (char, statOverride) => {
+      const stat = statOverride || "strong";
+      return char.attributes.primary[stat] || 0;
+    },
     formula: (base) => Math.max(base, 10),
   },
   painThreshold: {
-    base: (char) => char.attributes.primary.strong || 0,
+    default: "strong",
+    base: (char, statOverride) => {
+      const stat = statOverride || "strong";
+      return char.attributes.primary[stat] || 0;
+    },
     formula: (base) => Math.ceil(base * 0.5),
   },
   corruptionThreshold: {
-    base: (char) => char.attributes.primary.resolute || 0,
+    default: "resolute",
+    base: (char, statOverride) => {
+      const stat = statOverride || "resolute";
+      return char.attributes.primary[stat] || 0;
+    },
     formula: (base) => Math.ceil(base * 0.5),
   },
   defense: {
-    base: (char) => char.attributes.primary.quick || 0,
+    default: "quick",
+    base: (char, statOverride) => {
+      const stat = statOverride || "quick";
+      return char.attributes.primary[stat] || 0;
+    },
     formula: (base) => base,
   },
 };

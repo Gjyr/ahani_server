@@ -4,8 +4,27 @@ import { applyEffect, applyEquipmentBonuses } from "./applicator.mjs";
 export function recalculateDerivedFields(character) {
   const result = structuredClone(character);
 
+  const allEffects = [
+    ...(result.traits || []).filter((t) => t.effects).flatMap((t) => t.effects),
+    ...(result.effects || []),
+  ].filter((effect) => !isExpired(effect));
+
+  allEffects.sort((a, b) => (a.priority || 10) - (b.priority || 10));
+
+  const overrides = {};
+
+  for (const effect of allEffects) {
+    if (
+      effect.target?.startsWith("rules.") &&
+      effect.modifier.type === "setBase"
+    ) {
+      const stat = effect.target.split(".")[1];
+      overrides[stat] = effect.modifier.value;
+    }
+  }
+
   for (const [stat, rule] of Object.entries(SECONDARY_FORMULAS)) {
-    const baseValue = rule.base(result);
+    const baseValue = rule.base(result, overrides[stat]);
     const calculated = rule.formula(baseValue);
 
     if (typeof result.attributes.secondary[stat] === "object") {
@@ -18,15 +37,10 @@ export function recalculateDerivedFields(character) {
     }
   }
 
-  const allEffects = [
-    ...(result.traits || []).filter((t) => t.effects).flatMap((t) => t.effects),
-    ...(result.effects || []),
-  ].filter((effect) => !isExpired(effect));
-
-  allEffects.sort((a, b) => (a.priority || 10) - (b.priority || 10));
-
   for (const effect of allEffects) {
-    applyEffect(result, effect.target, effect.modifier);
+    if (!effect.target?.startsWith("rules.")) {
+      applyEffect(result, effect.target, effect.modifier);
+    }
   }
 
   applyEquipmentBonuses(result);

@@ -1,6 +1,7 @@
 import { renderCharacter } from "../templates/character.mjs";
 import { sanitizeCharacterForRole } from "../schema/sanitization.mjs";
 import { renderCharacterView } from "../renderers/renderCharacterView.mjs";
+import { recalculateDerivedFields } from "../rules/derived.mjs";
 
 export async function handleGetCharacterView(req, res) {
   const character = req.character;
@@ -11,8 +12,10 @@ export async function handleGetCharacterView(req, res) {
     return true;
   }
 
+  const recomputedCharacter = recalculateDerivedFields(character);
+
   const sanitizedCharacter = sanitizeCharacterForRole(
-    character,
+    recomputedCharacter,
     req.characterPermissions.role,
   );
 
