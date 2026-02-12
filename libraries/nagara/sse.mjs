@@ -46,7 +46,7 @@ export function removeClient(characterId, res) {
   }
 
   console.info(
-    `[SSE] Client removed for characrer ${characterClients}. Remaining: ${clients.size || 0}`,
+    `[SSE] Client removed for characrer ${characterId}. Remaining: ${clients?.size || 0}`,
   );
 }
 
@@ -92,7 +92,9 @@ export function sendKeepAlive(characterId) {
   clients.forEach((client) => {
     try {
       client.res.write(": keepalive\n\n");
+      // client.res.write("event: ping\ndata: {}\n\n");
     } catch (error) {
+      console.log("[SSE] needto remove client:", error);
       removeClient(characterId, client.res);
     }
   });

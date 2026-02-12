@@ -3,8 +3,10 @@ import { addClient, removeClient } from "../sse.mjs";
 import { getCharacter } from "../storage.mjs";
 
 export async function handleCharacterStream(req, res, characterId) {
-  const playerId = req.headers["x-player-id"];
-  const dmId = req.headers["x-player-id"];
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const playerId =
+    url.searchParams.get("playerId") || req.headers["x-player-id"];
+  const dmId = url.searchParams.get("dmId") || req.headers["x-dm-id"];
   const isDM = validateDmToken(dmId);
 
   // if (!playerId && !isDM) {
@@ -42,7 +44,9 @@ export async function handleCharacterStream(req, res, characterId) {
   const keepAliveInterval = setInterval(() => {
     try {
       res.write(": keepalive\n\n");
+      // res.write("event: ping\ndata: {}\n\n");
     } catch (error) {
+      console.error("[SSE] keep-alive write failed", error.message);
       clearInterval(keepAliveInterval);
       removeClient(characterId, res);
     }

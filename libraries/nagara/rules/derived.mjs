@@ -2,7 +2,6 @@ import { SECONDARY_FORMULAS, clampValues } from "./attributes.mjs";
 import { applyEffect, applyEquipmentBonuses } from "./applicator.mjs";
 
 export function recalculateDerivedFields(character) {
-  console.log("CHARACTER", character);
   const result = structuredClone(character);
 
   for (const [stat, rule] of Object.entries(SECONDARY_FORMULAS)) {
