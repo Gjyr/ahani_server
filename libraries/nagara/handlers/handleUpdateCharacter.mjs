@@ -1,12 +1,20 @@
-import { getCharacter, saveCharacter } from "../storage.mjs";
+import { getCharacter, updateCharacter } from "../storage.mjs";
+import { validateCharacterUpdate } from "../schema/validation.mjs";
+import { validateDmToken } from "../auth.mjs";
+import { applyFieldUpdate } from "../schema/utils.mjs";
+import { recalculateDerivedFields } from "../rules/derived.mjs";
 
 export async function handleUpdateCharacter(req, res, characterId) {
-  const playerId = req.header["x-player-id"];
-  const isDM = req.headers["x-dm-id"] === process.env.DM_TOKEN;
+  const playerId = req.headers["x-player-id"];
+
+  const dmId = req.headers["x-dm-id"];
+  const isDM = validateDmToken(dmId);
 
   if (!playerId && !isDM) {
     res.writeHead(403);
     res.end(JSON.stringify({ error: "Player ID or DM token required" }));
+
+    return true;
   }
 
   let body = "";
@@ -14,81 +22,102 @@ export async function handleUpdateCharacter(req, res, characterId) {
 
   req.on("end", async () => {
     try {
-      const patchData = JSON.parse(body);
-      const character = await getCharacter(characterId);
+      const { updates } = JSON.parse(body);
 
+      if (!Array.isArray(updates) || updates.length === 0) {
+        throw new Error("No updates provided");
+      }
+
+      const character = await getCharacter(characterId);
       if (!character) {
         res.writeHead(404);
-        return res.end(JSON.stringify({ error: "Character not found" }));
+        res.end(JSON.stringify({ error: "Character not found" }));
+
+        return true;
       }
 
-      if (character.playerId !== playerId && !isDM) {
+      const userRole = isDM
+        ? "dm"
+        : character.playerId === playerId
+          ? "owner"
+          : "public";
+
+      if (userRole === "public") {
         res.writeHead(403);
-        return res.end(JSON.stringify({ error: "Not authorized " }));
+        res.end(JSON.stringify({ error: "Not authorized" }));
+
+        return true;
       }
 
-      const results = [];
-      const errors = [];
+      const { validUpdates, errors } = await validateCharacterUpdate(
+        updates,
+        character,
+        userRole,
+        // { fullValidation: true },
+      );
 
-      for (const update of patchData.updates) {
-        try {
-          if (
-            !canUserEditField({ id: playerId, idDM }, character, update.field)
-          ) {
-            throw new Error(`Cannot edit field: ${update.field}`);
-          }
-
-          const validation = validateFieldUpdate(
-            update.field,
-            update.value,
-            character,
+      if (errors.length > 0) {
+        console.log("ERRORS ON PATCH", errors);
+        if (!res.headersSent) {
+          res.writeHead(422);
+          res.end(
+            JSON.stringify({
+              error: "Some updates failed",
+              validUpdates,
+              errors,
+            }),
           );
 
-          if (!validation.valid) {
-            throw new Error(validation.message);
-          }
-
-          applyFieldUpdate(character, update.field, update.value);
-
-          results.push({
-            field: update.field,
-            success: true,
-            newvalue: update.value,
-          });
-        } catch (error) {
-          errors.push({
-            field: update.field,
-            error: error.message,
+          return true;
+        } else {
+          console.error("Headers already sent", {
+            url: req.url,
+            method: req.method,
           });
         }
       }
 
-      if (errors.length > 0) {
-        res.writeHead(422);
-        return res.end(
-          JSON.stringify({
-            error: "Some updates failed",
-            results,
-            errors,
-          }),
+      let updatedCharacter = structuredClone(character);
+      for (const update of validUpdates) {
+        applyFieldUpdate(
+          updatedCharacter,
+          update.field,
+          update.value,
+          update.operation,
         );
       }
 
-      character.lastModified = new Date().toISOString();
-      await saveCharacter(character);
+      updatedCharacter = recalculateDerivedFields(updatedCharacter);
 
-      res.writeHead(200);
-      res.end(
-        JSON.stringify({
-          success: true,
-          character,
-          updates: results,
-        }),
+      const savedCharacter = await updateCharacter(
+        characterId,
+        updatedCharacter,
       );
+
+      // @TODO don't send applied updates
+      if (!res.headersSent) {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            success: true,
+            character: savedCharacter,
+            appliedUpdates: validUpdates,
+          }),
+        );
+      } else {
+        console.error("Headers already sent", {
+          url: req.url,
+          method: req.method,
+        });
+      }
     } catch (error) {
       console.error("PATCH error:", error);
-      res.writeHead(400);
-      res.end(JSON.stringify({ error: error.message }));
+      if (!res.headersSent) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: error.message }));
+      }
     }
   });
+
+  return true;
 }

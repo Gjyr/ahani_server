@@ -7,6 +7,7 @@ import {
   validateRPGRules,
   validateFieldValue,
   validateCrossFieldRules,
+  isFieldWritable,
 } from "./utils.mjs";
 import {
   deepMerge,
@@ -116,20 +117,22 @@ export function validateCharacterCreation(data, playerId, playerName) {
   };
 }
 
-export async function validateCharacterUpdate(updates, character, user) {
+export async function validateCharacterUpdate(
+  updates,
+  character,
+  role,
+  options,
+) {
   const errors = [];
   const validUpdates = [];
 
   for (const update of updates) {
-    const { field, value, operation } = update;
+    const { field, value, operation = "set" } = update;
 
-    const userRole =
-      user.id === character.playerId ? "owner" : user.isDM ? "dm" : "public";
-
-    if (!canAccessField(field, userRole, "write")) {
+    if (!isFieldWritable(field, role)) {
       errors.push({
         field,
-        error: `User ${user.id} cannot edit ${field}`,
+        error: `Not allowed to edit ${field}`,
         code: "FORBIDDEN",
       });
       continue;
@@ -152,6 +155,22 @@ export async function validateCharacterUpdate(updates, character, user) {
       //   continue;
       // }
     }
+
+    if (update.field === "traits" && update.operation === "push") {
+      const ability = update.value;
+      const cost = ability.cost[0];
+      const unspent = character.experience.unspent;
+
+      if (unspent < cost) {
+        errors.push({
+          field: "experience.unspent",
+          error: "Not enough XP",
+          code: "INSUFFICIENT_XP",
+        });
+        continue;
+      }
+    }
+
     validUpdates.push(update);
   }
 

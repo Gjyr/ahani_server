@@ -165,6 +165,7 @@ const TEXTS = {
 
 export function renderCharacter(character, { role = "public" } = {}) {
   const ctx = createTemplateContext(character, role);
+  // const ctx = createTemplateContext(character, "owner");
 
   return `
     ${renderMainHeader(ctx)}
@@ -232,13 +233,15 @@ function renderCharacterForm(ctx) {
         <input
           type="text"
           id="name"
-          name="characterName"
+          data-path="characterName"
           placeholder="Name"
           minlength="3"
           maxlength="16"
           required
+          aria-disabled
+          readonly
           aria-label="Character name"
-          data-behavior="select-enabled"
+          ${ctx.role !== "public" ? 'data-behavior="edit-enabled"' : ""}
           pattern="[\\w\\s\\-']+"
           value="${ctx.character?.characterName || "Name"}"
           tabindex="1"
@@ -795,11 +798,18 @@ function renderInput(attr, type, textsLocation, options = {}, ctx) {
   const placeholder = textsLocation[attr.toLowerCase()]?.placeholder || "";
 
   const isFieldReadonly = !ctx.isEditable(path) || isReadonly;
+  const editBehaviorAttrs = !isFieldReadonly
+    ? [
+        ["data-role-allowed", ctx.role],
+        ["data-behavior", "edit-enabled"],
+      ]
+    : [["aria-disabled", "true"]];
+
   const tabindex = isFieldReadonly ? "-1" : "1";
 
   const attrs = [
     `id="${attr.toLowerCase()}"`,
-    `name="${path}"`,
+    `data-path="${path}"`,
     `type="${type}"`,
     `placeholder="${placeholder}"`,
     `value="${value}"`,
@@ -807,7 +817,7 @@ function renderInput(attr, type, textsLocation, options = {}, ctx) {
     isAutoFocused ? "autofocus" : "",
     isRequired && !ctx.character ? "required" : "",
     `tabindex="${tabindex}"`,
-    `disabled`,
+    ...editBehaviorAttrs.map(([key, val]) => `${key}="${val}"`),
     ...flags.map(([key, val]) => `${key}="${val}"`),
   ]
     .filter(Boolean)

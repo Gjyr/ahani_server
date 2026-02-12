@@ -218,6 +218,7 @@ export function validateRPGRules(characterData) {
 
 export function isFieldWritable(fieldPath, role, schema = CHARACTER_SCHEMA) {
   const fieldSchema = getFieldSchema(fieldPath, schema);
+
   if (!fieldSchema) return false;
 
   if (
@@ -230,4 +231,34 @@ export function isFieldWritable(fieldPath, role, schema = CHARACTER_SCHEMA) {
   }
 
   return canAccessField(fieldPath, role, "write");
+}
+
+export function applyFieldUpdate(
+  character,
+  fieldPath,
+  value,
+  operation = "set",
+) {
+  const keys = fieldPath.split(".");
+  let current = character;
+
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (!current[keys[i]]) current[keys[i]] = {};
+    current = current[keys[i]];
+  }
+
+  const lastKey = keys[keys.length - 1];
+
+  switch (operation) {
+    case "set":
+      current[lastKey] = value;
+      break;
+    case "increment":
+      current[lastKey] = (current[lastKey] || 0) + value;
+      break;
+    case "push":
+      if (!Array.isArray(current[lastKey])) current[lastKey] = [];
+      current[lastKey].push(value);
+      break;
+  }
 }
