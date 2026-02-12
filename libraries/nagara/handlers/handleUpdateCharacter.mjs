@@ -3,6 +3,7 @@ import { validateCharacterUpdate } from "../schema/validation.mjs";
 import { validateDmToken } from "../auth.mjs";
 import { applyFieldUpdate } from "../schema/utils.mjs";
 import { recalculateDerivedFields } from "../rules/derived.mjs";
+import { broadcastToCharacter } from "../sse.mjs";
 
 export async function handleUpdateCharacter(req, res, characterId) {
   const playerId = req.headers["x-player-id"];
@@ -94,14 +95,14 @@ export async function handleUpdateCharacter(req, res, characterId) {
         updatedCharacter,
       );
 
-      // @TODO don't send applied updates
+      broadcastToCharacter(characterId, savedCharacter);
+
       if (!res.headersSent) {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(
           JSON.stringify({
             success: true,
             character: savedCharacter,
-            appliedUpdates: validUpdates,
           }),
         );
       } else {

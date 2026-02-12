@@ -6,3 +6,4 @@ export { handleCreateCharacter } from "./handleCreateCharacter.mjs";
 export { handleValidateDM } from "./handleValidateDM.mjs";
 export { handleGetCharacter } from "./handleGetCharacter.mjs";
 export { handleGetCharacterView } from "./handleGetCharacterView.mjs";
+export { handleCharacterStream } from "./handleStreamCharacter.mjs";

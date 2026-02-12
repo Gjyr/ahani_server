@@ -12,6 +12,7 @@ import {
   handleUploadPortrait,
   handleUpdateCharacter,
   handleCreateCharacter,
+  handleCharacterStream,
 } from "../libraries/nagara/handlers/index.mjs";
 import {
   renderInitialView,
@@ -96,6 +97,16 @@ async function nagaraRout(req, res, url) {
       .filter(Boolean);
 
     try {
+      if (
+        // GET /api/v1/nagara/characters/:id/stream
+        req.method === "GET" &&
+        pathParts[0] === "characters" &&
+        pathParts[1] &&
+        pathParts[2] === "stream"
+      ) {
+        return handleCharacterStream(req, res, pathParts[1]);
+      }
+
       if (
         // GET /api/v1/nagara/characters -- Get characters for me
         req.method === "GET" &&
