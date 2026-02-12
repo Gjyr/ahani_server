@@ -47,11 +47,50 @@ export function recalculateDerivedFields(character) {
 
   clampValues(result);
 
-  // enforceConsistency(result);
+  enforceConsistency(result);
 
   return result;
 }
 
 function isExpired(effect) {
   return effect.duration && new Date(effect.duration) < new Date();
+}
+
+function enforceConsistency(character) {
+  if (character.attributes?.secondary?.toughness) {
+    const t = character.attributes.secondary.toughness;
+    t.current = Math.max(0, Math.min(t.current, t.max));
+  }
+
+  if (character.experience?.unspent < 0) {
+    console.warn(`Negative XP for ${character.id}, resetting to 0`);
+    character.experience.unspent = 0;
+  }
+
+  if (Array.isArray(character.effects)) {
+    character.effects = character.effects.filter(
+      (effect) => !isExpired(effect),
+    );
+  }
+
+  character.equipment = character.equipment || {};
+  character.equipment.weapons = character.equipment.weapons || [];
+  character.equipment.armor = character.equipment.armor || {
+    body: null,
+    plug: [],
+  };
+
+  if (Array.isArray(character.traits)) {
+    const seen = new Set();
+
+    character.traits = character.traits.filter((trait) => {
+      const key = `${trait.name}_${trait.type}`;
+
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  return character;
 }
