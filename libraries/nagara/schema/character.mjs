@@ -76,8 +76,9 @@ export const CHARACTER_SCHEMA = {
 
   playerId: {
     type: "string",
-    required: true,
+    // required: true,
     immutable: true,
+    serverControlled: true,
     permissions: { owner: true, dm: true, public: false },
   },
 

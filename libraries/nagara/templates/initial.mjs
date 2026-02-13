@@ -48,9 +48,9 @@ const TEXTS = {
 };
 
 const BEHAVIOR_MAP = {
-  discord: ["clipboardEnabled", "hintEnabled"],
-  pinterest: ["hintEnabled", "linkEnabled"],
-  wow: ["hintEnabled", "linkEnabled"],
+  discord: ["clipboard-enabled", "hint-enabled"],
+  pinterest: ["hint-enabled", "link-enabled"],
+  wow: ["hint-enabled", "link-enabled"],
 };
 
 export function renderInitial() {
