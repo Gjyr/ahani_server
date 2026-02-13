@@ -92,6 +92,13 @@ const TEXTS = {
         label: "Icon with a plus sign",
         path: "portrait.file",
       },
+      experience: {
+        output: {
+          content: 50,
+          name: "experience.unspent",
+          for: "",
+        },
+      },
       abilities: {
         title: "Abilities",
         output: {
@@ -225,6 +232,8 @@ function renderCharacterForm(ctx) {
 
       ${renderPortraitBlock(ctx)}
 
+      ${renderExperienceBlock(ctx)}
+
       ${renderAbilitiesBlock(ctx)}
 
       ${renderInformationBlock(ctx)}
@@ -248,6 +257,16 @@ function renderCharacterForm(ctx) {
         />
       </div>
     </form>
+  `;
+}
+
+function renderExperienceBlock(ctx) {
+  return `
+    <section id="experience">
+      <h3>Experience</h3>
+
+      ${renderOutput("experience", {}, ctx)}
+    </section>
   `;
 }
 
@@ -740,7 +759,7 @@ function renderOutput(section, options = {}, ctx) {
       const primary = ctx.getValue("attributes.primary", {});
       const total = Object.values(primary).reduce((sum, val) => sum + val, 0);
       value = 80 - total;
-    } else if (section === "abilities") {
+    } else if (section === "abilities" || section === "experience") {
       const total = ctx.getValue("experience.total", 0);
       // const spent = calculateSpentExperience?.(ctx.character) || 0;
       const spent = ctx.getValue("experience.unspent", 0);
@@ -757,7 +776,6 @@ function renderOutput(section, options = {}, ctx) {
       ${isUI ? 'data-ui-only="true"' : ""}
       id="${outputConfig.name}"
       for="${outputConfig.for}"
-      hidden
       >${value}</output
     >
   `;
