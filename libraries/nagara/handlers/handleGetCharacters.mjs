@@ -1,3 +1,4 @@
+import { validateDmToken } from "../auth.mjs";
 import * as nagara from "../index.mjs";
 
 export async function handleGetCharacters(req, res, url) {
@@ -6,7 +7,7 @@ export async function handleGetCharacters(req, res, url) {
   if (!playerId) {
     // @TODO: disable dm handing
     const dmToken = req.headers["x-dm-id"];
-    if (dmToken === process.env.DM_TOKEN) {
+    if (validateDmToken(dmToken)) {
       const allChars = await nagara.getAllCharacters();
       res.writeHead(200);
       res.end(JSON.stringify(allChars));
