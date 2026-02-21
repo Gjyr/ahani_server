@@ -40,7 +40,10 @@ function setHeaders(res, mimeType, found) {
       "Content-Range": "bytes 0-6379463/6379464",
     });
   } else {
-    res.writeHead(statusCode, { "Content-Type": mimeType });
+    res.writeHead(statusCode, {
+      "Content-Type": mimeType,
+      "Access-Control-Allow-Origin": "*",
+    });
   }
 }
 
@@ -105,11 +108,37 @@ async function loggerRout(req, res, url) {
 
 // TODO: move to routs
 async function aiRout(req, res) {
+  const origin = req.headers.origin || "*";
+
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "null",
+  ];
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
   if (req.method === "GET") await serveSiteFiles(req, res);
   else if (req.method === "POST") await processMessagePost(req, res);
   else {
     res.statusCode = 400;
-    res.setHeader("Content-Type", MIME_TYPES["plain"]);
+    res.writeHead(400, {
+      "Content-Type": MIME_TYPES["plain"],
+      "Access-Control-Allow-Origin": "*",
+    });
     res.end(`I need to implement some exception handling`);
   }
 }

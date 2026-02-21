@@ -6,7 +6,8 @@ import {
   StreamProcessingError,
   ValidationError,
 } from "../errors/ChatError.mjs";
-import { params } from "#config";
+// import { params } from "#config";
+import { params } from "../config/xai.mjs";
 
 class DeepSeekStream extends Transform {
   constructor(apiKey, options = {}) {
@@ -40,7 +41,7 @@ class DeepSeekStream extends Transform {
       throw new ValidationError(
         "Invalid chat history format",
         "chathistory",
-        chatHistory
+        chatHistory,
       );
     }
 
@@ -48,7 +49,7 @@ class DeepSeekStream extends Transform {
       throw new ValidationError(
         "Chat history messages must be an array",
         "chatHistory.messages",
-        chatHistory.messages
+        chatHistory.messages,
       );
     }
 
@@ -57,7 +58,7 @@ class DeepSeekStream extends Transform {
         throw new ValidationError(
           `Message at index ${index} missing required fields`,
           `messages[${index}]`,
-          msg
+          msg,
         );
       }
     });
@@ -79,7 +80,7 @@ class DeepSeekStream extends Transform {
         {
           messagesCount: chatHistory.messages?.length,
         },
-        error
+        error,
       );
     }
   }
@@ -128,16 +129,16 @@ class DeepSeekStream extends Transform {
                       errorJson.error?.message || errorData
                     }`,
                   res.statusCode,
-                  requestBody
-                )
+                  requestBody,
+                ),
               );
             } catch (error) {
               reject(
                 new DeepSeekAPIError(
                   `API request failed with status ${res.statusCode} and body ${errorData}`,
                   res.statusCode,
-                  requestBody
-                )
+                  requestBody,
+                ),
               );
             }
           });
@@ -155,9 +156,9 @@ class DeepSeekStream extends Transform {
             `Network error: ${error.message}`,
             null,
             requestBody,
-            error
-          )
-        )
+            error,
+          ),
+        ),
       );
 
       try {
@@ -169,8 +170,8 @@ class DeepSeekStream extends Transform {
             "Failed to send request",
             null,
             requestBody,
-            error
-          )
+            error,
+          ),
         );
       }
     });
@@ -188,7 +189,7 @@ class DeepSeekStream extends Transform {
           lastMessage: chatHistory.messages
             ?.slice(-1)[0]
             ?.content?.substring(0, 100),
-        }
+        },
       ),
       error
     );

@@ -27,12 +27,12 @@ async function processMessagePost(req, res) {
       throw new ValidationError(
         "Message field is required and must be a string",
         "message",
-        requestBody.message
+        requestBody.message,
       );
 
     const acceptsSSE = req.headers.accept === MIME_TYPES["stream"];
 
-    const { message, parameters, chatFile = "messages.json" } = requestBody;
+    const { message, parameters, chatFile = "grok.json" } = requestBody;
 
     try {
       if (acceptsSSE) {
@@ -43,7 +43,7 @@ async function processMessagePost(req, res) {
           chatFile,
           message,
           parameters,
-          process.env.DEEPSEEK_API_KEY
+          process.env.XAI_API_KEY,
         );
       } else {
         await handleRegularResponse(
@@ -53,7 +53,7 @@ async function processMessagePost(req, res) {
           chatFile,
           message,
           parameters,
-          process.env.DEEPSEEK_API_KEY
+          process.env.XAI_API_KEY,
         );
       }
     } catch (error) {
@@ -65,7 +65,7 @@ async function processMessagePost(req, res) {
         });
       }
       res.write(
-        `event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`
+        `event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`,
       );
       res.end();
     }

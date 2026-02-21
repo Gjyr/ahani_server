@@ -8,7 +8,8 @@ import {
 import { readChatHistory } from "../utils/chatHistory.mjs";
 import { generateMessageId } from "../utils/idGenerator.mjs";
 import { MIME_TYPES } from "../../../app/config/config.mjs";
-import { params } from "#config";
+// import { params } from "#config";
+import { params } from "../config/xai.mjs";
 
 async function handleStreamingResponse(
   req,
@@ -17,7 +18,7 @@ async function handleStreamingResponse(
   chatFile,
   message,
   parameters,
-  apiKey
+  apiKey,
 ) {
   res.writeHead(200, {
     "Content-Type": MIME_TYPES["stream"],
@@ -46,25 +47,26 @@ async function handleStreamingResponse(
     const chatHistory = await readChatHistory(
       params.CHAT_HISTORY_DIR,
       // TODO: choose chat file
-      params.DEFAULT_CHAT
+      params.DEFAULT_CHAT,
     );
 
-    chatHistory.messages.push({
-      id: generateMessageId(),
-      role: parameters.role || params.DS_ROLE,
-      content: message,
-      timestamp: new Date().toISOString(),
-      parameters,
-    });
+    // chatHistory.messages.push({
+    //   id: generateMessageId(),
+    //   role: parameters.role || params.DS_ROLE,
+    //   content: message,
+    //   timestamp: new Date().toISOString(),
+    //   parameters,
+    // });
 
     const deepSeekStream = new DeepSeekStream(
-      process.env.DEEPSEEK_API_KEY,
-      parameters
+      // process.env.DEEPSEEK_API_KEY,
+      process.env.XAI_API_KEY,
+      parameters,
     );
     const responseCollector = new ResponseCollector();
     const historyUpdater = new HistoryUpdater(
       params.CHAT_HISTORY_DIR,
-      params.DEFAULT_CHAT
+      params.DEFAULT_CHAT,
     );
 
     // TODO: backpressure awareness
@@ -78,7 +80,7 @@ async function handleStreamingResponse(
         // unless pipeline handles it?
         if (!canWrite) {
           res.once("drain", () =>
-            console.log("Write buffer drained, continuing...")
+            console.log("Write buffer drained, continuing..."),
           );
         }
       } catch (error) {
@@ -136,7 +138,7 @@ async function handleStreamingResponse(
       historyStream,
       deepSeekStream,
       responseCollector,
-      historyUpdater
+      historyUpdater,
     );
 
     if (!streamEnded && !res.writableEnded) {
@@ -150,7 +152,7 @@ async function handleStreamingResponse(
       res.write(
         `event: error\ndata: ${JSON.stringify({
           error: error.message,
-        })}\n\n`
+        })}\n\n`,
       );
       handleStreamEnd();
     }

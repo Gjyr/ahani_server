@@ -1,5 +1,6 @@
 // main entry point
-import { params, validateConfig } from "./config/deepseek.mjs";
+// import { params, validateConfig } from "./config/deepseek.mjs";
+import { params, validateConfig } from "./config/xai.mjs";
 import { handleRegularResponse } from "./handlers/regular.mjs";
 import { handleStreamingResponse } from "./handlers/streaming.mjs";
 import {
@@ -13,7 +14,8 @@ validateConfig();
 
 async function processChatMessage(chatFile, message, parameters, res = null) {
   const { CHAT_HISTORY_DIR, NET_CONFIG, DS_PARAMETERS } = params;
-  const apiKey = process.env.DEEPSEEK_API_KEY;
+  // const apiKey = process.env.DEEPSEEK_API_KEY;
+  const apiKey = process.env.XAI_API_KEY;
 
   const finalParams = { ...DS_PARAMETERS, ...parameters };
 
@@ -27,7 +29,7 @@ async function processChatMessage(chatFile, message, parameters, res = null) {
       chatFile,
       message,
       finalParams,
-      apiKey
+      apiKey,
     );
   } else {
     return await handleRegularResponse(
@@ -41,7 +43,7 @@ async function processChatMessage(chatFile, message, parameters, res = null) {
       chatFile,
       message,
       finalParams,
-      apiKey
+      apiKey,
     );
   }
 }
