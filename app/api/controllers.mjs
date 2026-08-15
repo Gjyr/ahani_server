@@ -86,6 +86,22 @@ async function serveSiteFiles(req, res) {
   file.stream.pipe(res);
 }
 
+async function serveHoldPage(res) {
+  res.writeHead(503, {
+    "Content-Type": MIME_TYPES.html,
+    "Retry-After": "86400",
+  });
+
+  const stream = fs.createReadStream(`${PUBLIC_PATH}/public/hold.html`);
+
+  stream.on("error", (error) => {
+    console.error("Hold page stream error:", error);
+    res.end();
+  });
+
+  stream.pipe(res);
+}
+
 // TODO: hold route
 async function handleServeImages(imagePath, res) {
   await serveSiteImages(imagePath, res);
@@ -145,6 +161,7 @@ async function aiRout(req, res) {
 
 export {
   serveSiteFiles,
+  serveHoldPage,
   handleServeImages,
   handlePortraits,
   loggerRout,
